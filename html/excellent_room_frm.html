@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>优质房源</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	/*.aui-content-padded{
+		margin-top: 10px;
+	}*/
+	/*#room-pic{
+		width: 100%;
+		height: 160px;
+	}*/
+	/*ul{
+		list-style: none;
+	}*/
+	.aui-list-view-cell{
+		/*margin-top: 10px;*/
+		position: relative;
+		padding: 12px 0px;
+	}
+	.image-avatar{
+		width: 60px;
+		height: 60px;
+		position: absolute;
+		right: 20px;
+		bottom: 10px;
+	}
+	.room-title{
+		margin-left: 20px;
+		margin-top: 8px;
+		font-size: 18px;
+	}
+  .room-city{
+    margin-left: 20px;
+  }
+	.aui-ellipsis-1{
+    padding-right: 70px;
+  }
+  .room-price{
+    position: absolute;
+    left: 15px;
+    bottom: 25px;
+    background-color: rgba(115,115,115,75);
+    padding: 3px 10px;
+    border: thin solid #737373;
+    border-radius: 3px;
+    font-size: 17px;
+    color: white;
+  }
+</style>
+<body>
+    <div class="aui-content">
+    <ul class="aui-list-view" id="list">
+    	<!-- <li class="aui-list-view-cell " onclick="roomDetail('')">
+    		<div class="div-image-container"><img class="image-fill" src="../image/1.jpg"/></div>
+    		<div id="name">hello world</div>
+    		<img id="avatar" class="image-avatar" src="../image/2.jpg"/>
+    	</li> -->
+    </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+   var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+       // alert('hhhh=' + $api.offset($api.byId('test')).h); 157
+        pullRefresh(getDataList, true);
+        // $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有入住订单!</div>');
+    }
+        
+    function getDataList(pageIndex){
+      if (pageIndex > totalPage) {
+    		return;
+    	};
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      params['pageCount'] = 10;
+      params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.excellent_room_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        // api.alert({
+        //     title: 'title', 
+        //     msg: 'msg_content=' + JSON.stringify(ret)
+        // });
+        api.refreshHeaderLoadDone();
+        var more = $api.byId("more");
+        if(more){
+          $api.remove(more);
+        }
+        var tipText = $api.byId('tip-text');
+        if (tipText) {
+          $api.remove(tipText);
+        };
+        responseCallback(ret, err, function(){
+          if (!ret.repDatas || ret.repDatas.length < 2) {
+            if(1 == pageIndex){
+              $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有房源!</div>');
+              $api.addCls($api.byId('list'),'aui-hide');
+            }
+            return;
+          }else{
+            var listhtml = '';
+            // var more = $api.byId("more");
+            // if(more){
+            //   $api.remove(more);
+            // }
+            // var tipText = $api.byId('tip-text');
+            // if (tipText) {
+            //   $api.remove(tipText);
+            // };
+
+            $api.removeCls($api.byId('list'),'aui-hide');
+            totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+            	for(var i = 0; i < ret.repDatas.length - 1; i++){
+              		var item = ret.repDatas[i]; 
+               var headImg = item.headImg ? item.headImg : '../image/user_default.png';
+               listhtml += '<li class="aui-list-view-cell " onclick="roomDetail(\''+ item.houseID+'\',' + item.price +')"><div class="div-image-container"><img class="image-fill" src="'+item.houseImg+'"/><span class="room-price">¥'+ item.price+'</span></div><div class="room-title aui-ellipsis-1">'+item.houseTitle+'</div><img class="image-avatar" src="'+headImg+'"/><div class="room-city"><span class="aui-iconfont aui-icon-locationfill"/>&nbsp;&nbsp;'+item.city+' &#8226; 已成交 '+item.successCount+' 笔<div></li>'
+
+              
+				}
+
+			if(pageIndex == 1){
+              $api.html($api.byId('list'), listhtml);
+            }else{
+             $api.append($api.byId('list'), listhtml);
+            }
+            page += 1;
+            if (page > totalPage) {
+              return;
+            };
+            $api.after($api.byId('list'), '<p id="more" tapmode onclick="getDataList('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/);
+      });
+    }
+
+    function roomDetail(houseId, price){
+        openWindow(function(delay){
+
+              api.openWin({
+                name: "room_detail_win",
+                url: "room_detail_win.html",
+                pageParam:{
+                  houseId: houseId,
+                  fromFrame: 'excellent_room_frm',
+                  roomPrice: price
+                },
+                delay: delay
+              })     
+            })
+
+    }
+        
+</script>
+</html>

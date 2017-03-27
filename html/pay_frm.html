@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+#price-total{
+    color: #f66;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+#lable-price-total{
+    margin-left: 70px;
+}
+.pay_icon{
+    margin-left: 10px;
+    margin-right: -30px;
+}
+.aui-input-addon{
+    /*margin-left: -20px;*/
+    text-align: left !important;
+}
+body{
+    padding-top: 15px;
+}
+
+</style>
+<body>
+
+    <div class="aui-content-padded">
+        <span id="lable-price-total" >房费&nbsp;&nbsp;&nbsp;</span>
+        <span id="price-total"></span>
+        <span>&nbsp;&nbsp;&nbsp;元</span>
+    </div>
+    
+       <div class="aui-form">
+        <div class="aui-input-row" onclick="switchPayMethod(this)">
+            <img src="../image/alipay.png" class="pay_icon">
+            <label class="aui-input-addon">支付宝</label>
+            <input class="aui-pull-right aui-radio aui-radio-app" type="radio" name="pay" id="alipay" checked>
+        </div> 
+        <div class="aui-input-row" onclick="switchPayMethod(this)">
+            <img src="../image/weixin_pay.png" class="pay_icon">
+            <label class="aui-input-addon">微信支付</label>
+            <input class="aui-pull-right aui-radio aui-radio-app" type="radio" name="pay" id="weixin-pay">
+        </div>
+        </div>
+        <div class="aui-content-padded">
+        <div id="submit" class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="payAlert()">立即支付</div>
+    </div>
+
+
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    var pageParam;
+
+    var priceTotal;
+    apiready = function(){
+        api.parseTapmode();
+
+        pageParam = api.pageParam;
+        priceTotal = pageParam.roomCount * pageParam.roomPrice  * pageParam.dayCount;
+        $api.text($api.byId('price-total'), priceTotal);
+    }
+    function payAlert(){
+      confirmDialog('预定成功后不可取消或更改订单', pay);
+    }
+
+    function pay(){
+     
+        var orderType = 0;//普通订单
+        if ('excellent_room_frm' ==  pageParam.fromFrame) {
+          orderType = 1;//特定订单
+        }
+
+        var tradeNum = Math.floor(Math.random() * 10000) + $api.getStorage('userNum')  + (new Date).getTime();
+
+
+        var payMethod = '支付宝';
+        if ($api.byId('weixin-pay').checked) {
+            payMethod = '微信';
+
+            var wxPay = api.require('wxPay');
+            wxPay.config({//必须要有，否则调用微信支付会直接崩溃
+                
+            }, function(ret, err){
+                 
+            });
+            wxPay.pay({
+                 description: '来来订房-' + pageParam.orderId,
+                 totalFee: String(priceTotal * 100),
+                 detail: '来来订房:[' + pageParam.orderId + '],type:' + orderType + ','  + pageParam.city +',' + pageParam.dateText,
+                 tradeNo: tradeNum,
+            },function(ret, err){
+                 if(ret.status){
+
+                    orderDone();
+                 }else{
+                     // api.alert({msg: '支付异常：' err.code});
+                 }
+            });
+
+
+        }else{
+
+
+          payMethod = '支付宝';
+          var obj = api.require('aliPay');
+
+          var subject = '来来订房-' + tradeNum;
+          var body = '来来订房:[' + pageParam.orderId + '],type:' + orderType + ','  + pageParam.city +',' + pageParam.dateText;
+          var amount = String(priceTotal);
+
+          obj.pay({
+           subject:subject,
+           body:body,
+           amount:amount,
+           tradeNO:tradeNum
+          },function(ret,err) {
+
+            if (ret.code == '9000') {
+                orderDone();
+            };
+
+        
+          });
+
+        }
+    }
+    
+    function switchPayMethod(el){
+      $api.last(el).checked = true;
+    }
+
+    function orderDone(){
+        showLoading();
+        
+        var params = new Object();
+        var url = '';
+        if ('excellent_room_frm' ==  pageParam.fromFrame) {
+          url = UrlProvider.specific_order_pay;
+        }else{
+          url = UrlProvider.order_pay;
+          
+        }
+        params['houseID'] = pageParam.houseId;
+        params['userID'] = $api.getStorage('userId');
+        params['orderId'] = pageParam.orderId;
+        params['FKEY'] = DES3.APPKEY();
+
+        api.ajax({
+               url:url,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          
+          responseCallback(ret, err, function(){
+                toast(ret.resInfo);
+                 
+               
+                $api.setStorage('eventName', 'user_order_list');
+                $api.setStorage('frameTitle', '准备入住');
+                api.closeToWin({
+                    name: 'slidLayout', 
+                });
+                api.sendEvent({
+                    name: 'user_order_list',
+                    extra: {frameTitle: '准备入住'}
+                });
+               api.sendEvent({
+                            name: 'fixed_pane_div_style',
+                            extra: {name: 'user_order_list'}
+                        });
+               api.sendEvent({
+                            name: 'user_order_list_refresh',
+                            // extra: {index: 1}
+                        });
+
+
+                }
+            );
+      });
+    }
+    
+    function test(){
+      // api.closeWin();
+      // api.closeWin({
+      //   name: 'pay_win',
+      // });
+      //  api.closeWin({
+      //   name: 'confirm_order_win',
+      // });
+      //  return;
+       $api.byId('submit').disabled = true;
+       openWindow(function(delay){
+
+              api.openWin({
+                name: "room_list_win",
+                url: "room_list_win.html",
+                // name:'room_detail_win',
+                // url:'room_detail_win.html',
+                pageParam:{
+                  oderId: '302f961d539045fc9fd72417d3cd59fb',
+                },
+                delay: delay
+              })     
+            })
+      
+    }
+</script>
+</html>

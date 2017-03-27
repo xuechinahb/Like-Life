@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	
+
+</style>
+<body>
+    <div class="aui-content-padded">
+      <br/>
+      <!-- <img src="../image/unverify.png"> -->
+      <div>请仔细核对您的收款账号和收款人姓名，以便及时结算款项。</div>
+      <div class="subtitle">收款人账号</div>
+      <input id="account" class="app-border" type="number" placeholder="银行卡号/支付宝账号"/>
+      <div class="subtitle">收款人姓名</div>
+      <input id="name" class="app-border" type="text" placeholder="真实姓名"/>
+      <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit()" id="submit">提交</div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+    }
+    function submit(){
+        var account = $api.val($api.byId('account'));
+    	var name = $api.val($api.byId('name'));
+    	
+        if (account.length == 0) {
+            toast('请填写收款账号');
+            return false;
+        };
+        // if (account.length < 16) {
+        //     toast('收款账号无效');
+        //     return false;
+        // };
+    	if (name.length == 0) {
+    		toast('请填写姓名');
+    		return false;
+    	};
+    	
+    
+        var params = new Object();
+        params['payAccount'] =  account;
+        params['payName'] = name;
+        params['userID'] = $api.getStorage('userId');
+        params['FKEY'] = DES3.APPKEY();
+
+    	showLoading();
+    	api.ajax({
+    		url:UrlProvider.paymethod,
+    		method: 'post',
+    		headers:{"content-type": "application/x-www-form-urlencoded"},
+    		data:{body:
+    			"reqData=" + encodeURIComponent(JSON.stringify(params))
+                // "reqData=" + params
+    		}   
+    	},function(ret,err){
+    		responseCallback(ret, err, function(){
+
+    			api.alert({
+    				title: '提示',
+    				msg: '成功提交！请确保收款信息正确，我们将通过此收款信息与您结款。',
+    				buttons:['确定']
+    			},function(ret,err){
+    				// if(ret.buttonIndex == 1){
+    				// 	api.closeWin();
+    				// }
+    			});
+    		});
+    	});
+    }
+</script>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+	.aui-content-padded{
+		margin-top: 10px;
+	}
+
+	#name{
+		position: absolute;
+		left: 60px;
+		top: 20px;
+	}
+	#star-level *{
+		font-size: 45px;
+	}
+</style>
+<body>
+    <div class="aui-content-padded">
+      <!-- <div>
+      		<img class="image-avatar" src="http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100" />
+      		<span id="name">名字</span>
+      	</div> -->
+      	 <div id="star-level" class="aui-text-center">
+	      <a class="aui-iconfont aui-icon-favor" tapmode onclick="score(this, 1)"></a>
+	      <a class="aui-iconfont aui-icon-favor" tapmode onclick="score(this, 2)"></a>
+	      <a class="aui-iconfont aui-icon-favor" tapmode onclick="score(this, 3)"></a>
+	      <a class="aui-iconfont aui-icon-favor" tapmode onclick="score(this, 4)"></a>
+	      <a class="aui-iconfont aui-icon-favor" tapmode onclick="score(this, 5)"></a>
+	    </div>
+	    <textarea class="app-border" cols="50" rows="10" placeholder="写下您真实客观的评价" id="content"></textarea>
+	    <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit()">发表评价</div>
+    	<div class="div-blank"></div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+	var starLevel = 0;
+    apiready = function(){
+        api.parseTapmode();
+    }
+    function score(el, level){
+    	starLevel = level;
+    	var checkedEl = el;
+    	do{
+    		$api.removeCls(checkedEl, 'aui-icon-favor');
+    		$api.addCls(checkedEl, 'aui-icon-favorfill');
+    	}while(checkedEl = checkedEl.previousSibling);
+    	
+    	var uncheckedEl = el.nextSibling;
+    	while(uncheckedEl){
+    		$api.removeCls(uncheckedEl, 'aui-icon-favorfill');
+    		$api.addCls(uncheckedEl, 'aui-icon-favor');
+    		uncheckedEl = uncheckedEl.nextSibling;
+    	}
+
+    }
+    function submit(){
+    	if (0 == starLevel) {
+    		toast('请评分');
+    		return;
+    	};
+        var content = $api.val($api.byId('content'));
+    	if (!content) {
+    		toast('请填写评价内容');
+    		return;
+    	};
+        showLoading();
+    	var params = new Object();//组合参数
+    	var pageParam = api.pageParam;
+       
+        api.ajax({
+        	url:UrlProvider.newcomment,
+        	method: 'post',
+        	headers:{"content-type": "application/x-www-form-urlencoded"},
+        	data:{body:
+        		"reqData=" + encodeURIComponent(JSON.stringify(params))
+        	}   
+        },function(ret,err){
+        	api.refreshHeaderLoadDone();
+        	responseCallback(ret, err, function(){
+        		toast(ret.resInfo);
+        		api.closeWin();
+        		api.execScript({
+				    name: 'slide',
+				    frameName: 'user_order_list_frm',
+				    script: 'updateEl(' + api.pageParam.elIndex + ');'
+				});
+        	}, true);
+        });
+    }
+</script>
+</html>

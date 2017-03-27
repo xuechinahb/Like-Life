@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/swiper.css" />
+    <style>
+    
+      .swiper-container {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+            }
+        .swiper-slide {
+                text-align: center;
+                font-size: 18px;
+                background: #fff;
+
+                /* Center slide text vertically */
+                display: -webkit-box;
+                display: -webkit-flex;
+                display: flex;
+
+                -webkit-box-pack: center;
+                -webkit-justify-content: center;
+                justify-content: center;
+            }
+            
+        .guide_img{
+        		width: 100%;
+        		height: 100%;
+        }
+ 		.launch {
+    			width: 200px;
+    			position: absolute;
+    			left: 0;
+    			right: 0;
+    			top: 85%;
+    			margin-left: auto;
+    			margin-right: auto;
+		}
+		
+    	body{
+    		
+    	}
+    </style>
+</head>
+<body>
+	
+	 <div class="box swiper-container">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  	<img class="guide_img"  src="../image/guide-1.png"/>
+                </div>
+                <div class="swiper-slide">
+                  	<img class="guide_img" src="../image/guide-2.png"/>
+                </div>
+                <div class="swiper-slide">
+                  	<img class="guide_img" src="../image/guide-3.png"/>
+                </div>
+                <div class="swiper-slide">
+                		<img class="guide_img" src="../image/guide-4.png"/>
+                </div>
+                <div class="swiper-slide">
+                		<!--<div>-->
+                		<img  class="launch" src="../image/launch_icon.png" onclick="launch()"/>
+                			<img class="guide_img" src="../image/guide-5.png"/>
+                			<img  class="launch" src="../image/launch_icon.png" onclick="launch()"/>
+                			<!--<div class="btn" tapmode onclick="launch()">马上体验</div>-->
+                		<!--</div>-->
+                		
+                </div>
+                
+            </div>
+            <!-- Add Pagination -->
+            <!--<div class="swiper-pagination"></div>-->
+        </div>  
+	
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/swiper.min.js"></script>
+<script type="text/javascript">
+	var swiper = new Swiper('.swiper-container', {
+            pagination: '.swiper-pagination',
+            paginationClickable: true,
+        });
+
+	apiready = function(){
+		api.parseTapmode();
+        // var phoneInfo = api.require('phoneInfo');
+        // phoneInfo.getBaseInfo(function(ret,err){
+        //     if(ret.status){
+        //        if(ret.brand.toLowerCase() == 'xiaomi' || ret.manufacturer.toLowerCase() == 'xiaomi' ){
+        //             launch();
+        //        }
+        //     }else{
+        //         // api.alert({msg:err.msg});
+        //     }
+        // });
+	};
+	
+	function openLogin(){//打开登录页
+		api.openFrame({
+	        name: 'login_win',
+	        url: 'login_win.html',
+	        bounces: true,
+	        rect: {
+		        x:0,
+		        y:0,
+		        w:'auto',
+		        h:'auto'
+	        }
+        });
+       api.closeFrame({
+    		name: 'guide_frm'
+		});
+
+	}
+	
+	
+	function launch(){
+		$api.setStorage('showGuide',true);
+        var userId = $api.getStorage('userId');
+        if(!userId){
+        		openLogin()
+        }else{
+   			api.openSlidLayout({
+    					type:'left',
+    					leftEdge:60,
+	                fixedPane:{
+	                		name:'fixed',
+	                		url: 'fixed.html'
+	                },
+	                slidPane:{
+	                		name: 'slide',
+	                		url: 'slide.html'
+	                }
+                },function(ret,err){
+                	//coding...
+                });
+            api.closeFrame({
+                name: 'guide_frm'
+            });        
+        }
+	}
+	
+</script>
+</html>

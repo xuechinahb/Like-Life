@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+    <style type="text/css">
+        body{
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+   
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    function closeWin(){
+        api.closeWin();
+    }
+    apiready = function(){
+        api.parseTapmode();
+        var pageParam = api.pageParam;
+
+        var imagesCount = pageParam.images.length;
+        
+       
+        
+        var photoBrowser = api.require('photoBrowser');
+        photoBrowser.open({
+            images: pageParam.images,
+            activeIndex: pageParam.activeIndex,
+            placeholderImg: 'widget://image/img_default.png',
+        }, function(ret){
+            if ('click' == ret.eventType) {
+                closeWin();
+            }else if('change' == ret.eventType) {
+                api.execScript({
+                    frameName: 'image_browser_frm',
+                    script: 'updateIndex('+ ret.index +');'
+                });
+            }
+        });
+
+        api.openFrame({
+            name: 'image_browser_frm',
+            url: 'image_browser_frm.html',
+            pageParam: {
+                activeIndex: pageParam.activeIndex,
+                imagesCount: imagesCount
+            },
+            rect: {
+                x: 0,
+                y: api.winHeight * 0.9,
+            }
+        });
+        
+    };
+</script>
+</html>

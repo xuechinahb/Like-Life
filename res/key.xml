@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<security>
+<item name="aliPay_partner" value=""/>
+<item name="aliPay_seller" value=""/>
+<item name="aliPay_rsaPriKey" value=""/>
+<item name="aliPay_rsaPubKey" value=""/>
+
+<item name="aliPay_notifyURL" value=""/>
+
+<item name="wxPay_appId" value=""/>
+  <item name="wxPay_mchId" value=""/>
+  <item name="wxPay_partnerKey" value=""/>
+  <item name="wxPay_notifyUrl" value=""/>
+</security> 

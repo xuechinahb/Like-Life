@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style type="text/css">
+        #div-search{
+            /*margin: 5px 0px;*/
+            padding: 5px 10px 5px;
+            height: 50px;
+        }
+        #div-search div{
+            margin-left: 0px 10px;
+            border: 1px #e9e9e9 solid;
+            border-radius: 5px;
+            line-height: 35px;
+            padding-left: 10px;
+        }
+        .aui-bar-app {
+            background-color: #FF6666;
+            height: 45px;
+        }
+        #div-map{
+            height: 180px;
+        }
+    </style>
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+        <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">选取位置</div>
+        <a class="aui-iconfont aui-icon-menu aui-pull-right"></a>
+    </header>
+    <div class="aui-input-row" id="div-search" onclick="openSearchBox(this)">
+            <i class="aui-input-addon  aui-iconfont aui-icon-search"></i>
+           <!--  <input type="text" class="aui-input" placeholder="搜索" onclick="openSearchBox(this)" event.cancelBubble=false;/> -->
+           <div>搜索</div>
+    </div>
+   <!--  <div id="div-search">
+        <a class="aui-iconfont aui-icon-search"></a>
+        <div onclick="openSearchBox(this)">搜索</div>
+    </div> -->
+
+   <div id="div-map"></div>
+  <!--  <div class="aui-tab">
+        <ul class="aui-tab-nav" id="tab">
+            <li class="active">全部</li>
+            <li>地铁</li>
+            <li>公交</li>
+        </ul>
+    </div> -->
+    <div class="aui-content">
+        <ul class="aui-list-view" id="list">
+        </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/location.js"></script>
+<script type="text/javascript">
+    var city='', keyword='';
+    // var map;
+    function closeWin(){
+        // var map = api.require('bMap');
+        // map.close();
+        api.closeWin();
+        // var pageParam = api.pageParam;
+        // api.execScript({
+        //         name: pageParam.fromWin,
+        //         frameName: pageParam.fromFrm,
+        //         script: 'mapLocation(false);'
+        //     });
+    }
+    apiready = function(){
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        // return;
+        var pageParam = api.pageParam;
+        city = pageParam.city;
+        keyword = pageParam.keyword;
+        // if (!keyword) {
+        //     // mapLocation(true, true, initView);
+        //     mapLocation(true, initView);
+        //     // mapLocation(true);
+        // }else{
+        //     initView();
+        // }
+        
+        initView();
+        // setInterval(function(){
+        //     api.execScript({
+        //             frameName: 'poi_list_frm',
+        //             script: 'search(\'' + city + '\',\'' + streetName + '\',' + 0 + ');' 
+        //         });
+        // }, 500);
+         
+    };
+    function initView(){
+        var headerPos = $api.offset($api.byId('aui-header'));
+        // var body_h = $api.offset($api.dom('body')).h;
+        var search_h = $api.offset($api.byId('div-search')).h;
+        var pageParam = api.pageParam;
+        
+        var map = api.require('bMap');
+        map.open({
+            rect: {
+                x: 0,
+                y:headerPos.h + search_h,
+                w: headerPos.w,
+                h:180
+            },
+            center: {
+                lon: pageParam.longitude,
+                lat: pageParam.latitude
+            },
+            zoomLevel: 16,
+            showUserLocation: true,
+            fixedOn: '',
+            fixed: true
+        }, function(ret){
+            // if(ret.status){
+            //     alert('地图打开成功');
+            // }
+        });
+        // var tab = $api.domAll("#tab li");
+        // for(var i in tab){
+        //     $api.addEvt(tab[i], 'click', function(){
+        //         $api.removeCls($api.dom("#tab li.active"),'active');
+        //         $api.addCls(this,'active');
+        //     });
+        // }
+        api.openFrame({
+            name: 'poi_list_frm',
+            url: 'poi_list_frm.html',
+            bounces: false,
+            pageParam:{
+                        city: city,
+                        keyword: keyword,
+                        fromWin: pageParam.fromWin,
+                        fromFrm: pageParam.fromFrm
+                    },
+            rect: {
+                x: 0,
+                y: headerPos.h + search_h + 180,
+                w: headerPos.w,
+                h: 'auto'
+            }
+        })
+    }
+
+    function openSearchBox(arg){
+        var obj = api.require('UISearchBar');
+        obj.open({
+            placeholder: '请输入搜索关键字',
+            historyCount: 20,
+            showRecordBtn: false,
+            texts: {
+                cancelText: '取消',
+                clearText: '清除搜索记录'
+            },
+            styles: {
+                navBar: {
+                    bgColor: '#F66',
+                    borderColor: '#ccc'
+                },
+                searchBox: {
+                    bgImg: '',
+                    color: '#000',
+                    height: 44
+                },
+                cancel: {
+                    bg: 'rgba(0,0,0,0)',
+                    color: '#000',
+                    size: 16
+                },
+                list: {
+                    color: '#696969',
+                    bgColor: '#FFFFFF',
+                    borderColor: '#eee',
+                    size: 16
+                },
+                clear: {
+                    color: '#000000',
+                    borderColor: '#ccc',
+                    size: 16
+                }
+            }
+        }, function(ret){
+                var word = ret.text;
+                $api.html($api.last(arg), word);
+                // search(word);
+                api.execScript({
+                    frameName: 'poi_list_frm',
+                    script: 'search(\'' + city + '\',\'' + word + '\',' + 0 + ');' 
+                });
+            
+        });
+    }
+
+    function setMapCenter(longitude, latitude){
+        var map = api.require('bMap');
+        map.setCenter({
+            coords: {
+                lon: longitude,
+                lat: latitude
+            },
+            animation:true
+        });
+        map.addAnnotations({
+            annotations: [{
+                id: 1, lon: longitude, lat: latitude
+            },
+           
+           ],
+            icon: 'widget://image/map_marka.png',
+            draggable: false
+        }, function(ret){
+            // if(ret){
+            //     alert(ret.id);
+            // }
+        });
+    }
+
+</script>
+</html>

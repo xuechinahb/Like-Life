@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+
+</style>
+<body>
+    <div class="aui-content">
+        <li class="aui-list-view-cell" tapmode onclick="openNewWin('快速订房指南','user_guide_1.png')">
+            <a class="aui-arrow-right">快速订房指南</a>
+        </li>
+         <li class="aui-list-view-cell" tapmode onclick="openNewWin('直接订房指南','user_guide_2.png')">
+            <a class="aui-arrow-right">直接订房指南</a>
+        </li>
+        <li class="aui-list-view-cell" tapmode onclick="openNewWin('酒店操作指南','user_guide_3.png')">
+            <a class="aui-arrow-right">酒店操作指南</a>
+        </li>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+    }
+
+     function openNewWin(title, imageName){
+	    openWindow(function(delay){
+	      api.openWin({
+	        name: 'user_guide_detail_win',
+	        url: 'user_guide_detail_win.html',
+	        pageParam:{
+	        	title: title,
+	        	imageName: imageName
+	        },
+	        delay: delay
+	      })     
+	    })
+	  }
+        
+</script>
+</html>

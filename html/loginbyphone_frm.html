@@ -1,0 +1,193 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+.aui-content {
+    margin-top: 15px;
+}
+#sendVerify{
+    color: #f66;
+}
+
+</style>
+<body>
+    <div class="aui-content aui-card">       
+        <div class="aui-form">
+            <div class="aui-input-row">
+                <i class="aui-input-addon aui-iconfont aui-icon-mobile aui-text-app"></i>
+                <input type="tel" class="aui-input" id="phone" placeholder="请输入手机号码"/>
+            </div>
+
+           
+            <div class="aui-input-row">
+                <i class="aui-input-addon aui-iconfont aui-icon-write aui-text-app"></i>
+                <input type="tel" class="aui-input" id="code" placeholder="请输入验证码"/>
+                <span class="aui-input-addon">
+                    <div class="aui-btn" id="sendVerify" status="1" tapmode onclick="sendCode()">获取验证码</div>
+                </span>
+            </div>
+            
+            <div class="aui-btn-row">
+                <div class="aui-btn aui-btn-block aui-btn-app" onclick="verifyCode()">登录</div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    // var mob = null;
+    var smsVerify = null;
+    apiready = function(){
+        api.parseTapmode();
+        // mob = api.require('mobVerify');
+        smsVerify = api.require('smsVerify');
+        registerSMS();
+    }
+    function registerSMS(){
+       
+
+        smsVerify.register(function(ret, err){
+            if(ret.status){
+                //api.alert({msg: '注册成功'});
+            }else{
+                api.alert({msg: err.code+' 注册失败'});
+            }
+        });
+    }
+    function sendCode(){
+        // var phone = document.getElementById('phone').value;
+        var phone = $api.val($api.byId('phone'));
+        if (phone.length < 11) {
+            toast('请输入有效的手机号码');
+            return;
+        };
+        showLoading('正在发送验证码');
+        
+        smsVerify.sms({
+            phone: phone,
+            country:"86"
+        },function(ret, err){
+            api.hideProgress();
+            if(ret.status){
+                toast('验证码已发送，请查收短信');
+                getVerify();
+            }else{
+                api.alert({msg: err.code+' 短信发送失败'});
+            }
+        });
+    }
+    function getVerify() {
+        var sendVerify = $api.byId('sendVerify');
+        var status = $api.attr(sendVerify,'status');
+        if(status!=1){
+            return;
+        }
+        $api.removeAttr(sendVerify,'onclick');
+        api.parseTapmode();
+        $api.html(sendVerify,'<span id="GetVerify">60</span>S');
+        times = 59;
+        isinerval = setInterval("CountDown()", 1000);
+    }
+    function CountDown() {
+        if (times < 1) {
+            var sendVerify = $api.byId('sendVerify');
+            $api.attr(sendVerify,'onclick','sendCode()');
+            $api.attr(sendVerify,'status','1');
+            api.parseTapmode();
+            $api.html(sendVerify,'重新获取');
+            clearInterval(isinerval);
+            return;
+        }
+        var getVerify = $api.byId('GetVerify');
+        $api.html(getVerify,''+times+'');
+        times--;
+    }  
+
+    function verifyCode(){
+
+        
+        var phone = $api.val($api.byId('phone'));
+        var code = $api.val($api.byId('code'));
+        if (phone.length < 11) {
+            toast('请输入有效的手机号码');
+            return;
+        };
+        if (code.length == 0) {
+            toast('请输入验证码');
+            return;
+        };
+        login(phone, code);return;
+        showLoading("登录中...");
+        // mob.verify({
+        //     phone: phone,
+        //     code: code
+        // }, function(ret, err){
+        //     if(err){
+        //         toast(err.detaul);
+        //         api.hideProgress();
+        //     }else{
+        //         // api.alert({msg: '验证码正确'});
+        //         login(phone, code);
+        //     }
+        // });
+        smsVerify.verify({
+            phone: phone ,
+            country:"86",
+            code: code 
+        },function(ret, err){
+            if(ret.status){
+                // api.alert({msg: '验证成功'});
+                login(phone, code);
+            }else{
+                api.hideProgress();
+                api.alert({msg: err.code+' 验证失败'});
+            }
+        });
+    }
+    function login(phone , code ){
+
+        var appkey = DES3.APPKEY();
+        var params = encodeURIComponent("");//填入参数
+
+        api.ajax({
+           url:UrlProvider.login,
+            method: 'post',
+            headers:{"content-type": "application/x-www-form-urlencoded"},
+            data:{body:
+                "reqData=" + params
+            }   
+       },function(ret,err){
+
+                responseCallback(ret, err, function(){
+            $api.setStorage('userNum',ret.repDatas[0].userNum);
+            $api.setStorage('userId', phone);
+            $api.setStorage('headImg', '../image/user_default.png');
+                api.openSlidLayout({
+                      type: 'left',
+                       fixedPane:{
+                        name: "fixed",
+                        url: "fixed.html",
+                      // pageParam:{headImg:headImgArg}
+                       },
+                       slidPane:{
+                      name:"slide",
+                      url: "slide.html"
+                       }
+                   },function(ret,err){
+                      
+                   });
+            });
+       });
+    }
+    
+
+</script>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+
+</style>
+<body>
+	<div class="aui-content">
+		<ul class="aui-list-view" id="list">
+			<!-- <li class="aui-list-view-cell">
+				<div  class="aui-text-center"><img class="image-avatar" src="http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100"/></div>
+				<div class="aui-text-center">名字</div>
+				<div class="aui-text-center">200030</div> 
+				<div class="aui-padded-0-10 aui-text-justify"></div>
+			</li> -->
+		</ul>
+	</div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+	var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+        pullRefresh(getComment);
+    }
+        
+    function getComment(pageIndex){
+    	if (pageIndex > totalPage) {
+    		return;
+    	};
+        var params = new Object();
+        var pageParam = api.pageParam;
+        params['userID'] = $api.getStorage('userId');
+        params['houseID'] = pageParam.houseId;
+        params['pageCount'] = 10;
+        params['pageIndex'] = page;
+        params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+               url:UrlProvider.room_comment,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          api.refreshHeaderLoadDone();
+          var more = $api.byId("more");
+          if(more){
+            $api.remove(more);
+          }
+          responseCallback(ret, err, function(){
+            if (!ret.repDatas || ret.repDatas.length < 2) {
+                
+                return;
+            }else{
+                var listhtml = '';
+    //             var more = $api.byId("more");
+				// if(more){
+				// 	 $api.remove(more);
+				// }
+				totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+				for(var i = 0; i < ret.repDatas.length - 1; i++){
+					var item = ret.repDatas[i]; 
+					var portrait = item.headImg;
+          if (!portrait) {
+            portrait = '../image/user_default.png';
+          };
+					listhtml += '<li class="aui-list-view-cell"><div  class="aui-text-center"><img class="image-avatar" src="' +portrait + '"/></div><div class="aui-text-center">'+item.nickName +'</div><div class="aui-text-center">'+item.time +'</div><div class="aui-text-justify">'+ item.content +'</div></li>';
+				}
+
+				if(pageIndex == 1){
+		        	$api.html($api.byId('list'), listhtml);
+		        }else{
+		        	$api.append($api.byId('list'), listhtml);
+		        }
+
+
+		        page += 1;
+		        if (page > totalPage) {
+    				return;
+    			};
+		        $api.after($api.byId('list'), '<p id="more" tapmode onclick="getComment('+page+')">点击加载更多</p>');
+            }
+         
+          });
+        });
+    }
+</script>
+</html>

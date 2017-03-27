@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+
+</style>
+<body>
+    <!-- <div class="aui-content"> -->
+       <ul class="aui-list-view" id="list">
+          <!--   <li class="aui-list-view-cell">
+                <span id="date"></span>
+            </li> -->
+        </ul>
+    <!-- </div> -->
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript">
+	var mapHeight;
+	var curLongitude, curLatitude;
+	var desLongitude, desLatitude;
+
+	var locationFlag;
+	var routeType, policy;
+    apiready = function(){
+        api.parseTapmode();
+        desLongitude = api.pageParam.longitude;
+        desLatitude = api.pageParam.latitude;
+        // desLongitude = 113.987004;
+        // desLatitude = 22.545734;
+        
+        mapHeight = api.winHeight * 0.6;
+        $api.css($api.byId('list'), 'margin-top: ' + mapHeight + 'px;');
+        showLoading();
+        var bMap = api.require('bMap');
+		bMap.getLocation({
+		    accuracy: '100m',
+		    autoStop: true,
+		    filter: 1
+		}, function(ret, err){
+		    if(ret.status){
+		    	locationFlag = true;
+		    	curLongitude = ret.lon;
+		    	curLatitude = ret.lat;
+		    	openMap();
+		    }else{
+		    	api.hideProgress();
+		        alert('定位失败');
+		    }
+		});
+    }
+
+    function openMap(){
+    	var map = api.require('bMap');
+		map.open({
+            rect: {
+                x: 0,
+                y: 0,
+                h:mapHeight
+            },
+            center: {
+                lon: curLongitude,
+                lat: curLatitude
+                // lon: 116.403838,
+                // lat: 39.914437
+            },
+            zoomLevel: 16,
+            showUserLocation: false,
+            fixedOn: 'traffic_route_frm',
+            fixed: false
+        }, function(ret){
+            
+        });
+		
+       api.hideProgress();
+       // setTimeout(searchRoute, 500);
+       searchRoute('transit', 'ebus_walk_first');
+    }
+    
+
+    function searchRoute(routeType, policy){
+    	if (!locationFlag) {
+    		alert('定位失败');
+    		return;
+    	};
+    	var map = api.require('bMap');
+    	map.removeRoute({
+		    ids: [1]
+		});
+		map.searchRoute({
+		    id: 1,
+		    type: routeType,
+		    policy: policy,
+		    start: {
+		        lon: curLongitude,
+		        lat: curLatitude
+		    },
+		    end: {
+		        lon: desLongitude,
+		        lat: desLatitude
+		    }
+		}, function(reta, err){
+		    if(reta.status){
+		        // api.alert({msg:JSON.stringify(reta)});
+		        var listHtml = '';
+
+		        if (!reta.plans[0].nodes) {
+		        	if (reta.plans[0].distance < 1000) {
+		        		listHtml = '<li class="aui-list-view-cell">距离较近，请步行前往</li>';
+		        	}else{
+		        		listHtml = '<li class="aui-list-view-cell">未查询到合适的路线</li>';
+		        	}
+		        }else{
+		        	for(var i  = 0; i < reta.plans[0].nodes.length; i++){
+			        	var item = reta.plans[0].nodes[i];
+			        	listHtml += '<li class="aui-list-view-cell">'+ item.description +'</li>';
+			        }
+
+		        }
+
+		        
+		        $api.html($api.byId('list'), listHtml);
+		         map.drawRoute({
+		            id: 1,
+		           autoresizing:true,
+		            index: 0,
+		            styles: {
+		                start: {
+		                    icon: 'widget://image/icon_route_start.png'
+		                },
+		                end: {
+		                    icon: 'widget://image/icon_route_end.png'
+		                }
+		            }
+		        }, function(retb){
+		           // api.alert({msg:JSON.stringify(ret)});
+		           	try{
+		           		api.alert({msg:reta.plans[0].nodes[retb.nodeIndex].description});
+		           	}catch(err){
+		           		
+		           	}
+		           	
+
+		           
+		        });
+		    }
+		});
+    }
+</script>
+</html>

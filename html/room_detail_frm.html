@@ -1,0 +1,559 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+
+    /**{
+        color: #737373;
+    }*/
+    *{
+        background-color: #eee;
+    }
+    #room-comment{
+        padding: 10px;
+        background-color: white !important;
+    }
+    #room-comment *{
+        background-color: white !important;
+    }
+
+    #all-comment{
+        margin: 10px 0px;
+        background-color: #f66 !important;
+    }
+    #all-comment:active {
+        background-color: #fff !important;
+        color: #f66 !important;
+    }
+	#imageIndex{
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		font-weight: bold;
+		color: #f66;
+        background-color: rgba(0,0,0,0);
+	}
+	
+    #verify-state{
+        height: 30px;
+        margin-top: 3px;
+    }
+  .app-title{
+    color: black;
+  }
+  .detail-text{
+    color: #737373;
+  }
+
+  #name{
+    margin-top: -10px;
+  }
+
+  #detailInfo{
+    margin-top: 200px;
+  }
+
+  #star-level *{
+        margin-top: -8px;
+        font-size: 30px;
+    }
+ 
+    .aui-grid-sixteen{
+        background-color:  #e9e9e9;
+    }
+    .aui-grid-sixteen:after{
+        border-top: 0px solid #c8c7cc;
+        border-right: 0px solid #c8c7cc;
+    }
+    .aui-grid-sixteen li:after {
+        border-left: 0px solid #c8c7cc;
+        border-bottom: 0px solid #c8c7cc;
+    }
+    .aui-grid-sixteen li {
+        padding: 5px 3px;
+    }
+
+    #header{
+        margin-top: 200px;
+    }
+    .device-name{
+
+    }
+    .device-name-small{
+        font-size: 13px;
+    }
+</style>
+<body>
+  <div id="header" class="aui-content">
+    <!-- <div class="div-image-container">
+      <img id="room-image" class="image-fill" onclick="multipleImageBrowser()" />
+      <span id="imageIndex"></span>
+    </div>
+
+    <div id="room-title" class="aui-text-center app-title"></div>
+    <div  class="aui-text-center"><img id="avatar" class="image-avatar"/></div>
+    <div id="name" class="aui-text-center app-title"></div>
+    <div class="aui-text-center"><img id="verify-state" src="../image/verified.png"/></div>
+
+    <div id="star-level" class="aui-text-center">
+      <a class="aui-iconfont aui-icon-favorfill"></a>
+      <a class="aui-iconfont aui-icon-favorfill"></a>
+      <a class="aui-iconfont aui-icon-favorfill"></a>
+      <a class="aui-iconfont aui-icon-favorfill"></a>
+      <a class="aui-iconfont aui-icon-favorfill"></a>
+    </div>
+    <div id="address" class="aui-text-center"></div> -->
+    <!-- <div style="height:180px;background-color: red;"></div> -->
+    
+</div>
+
+<!--********************************** -->
+    <div id="detailInfo" class="aui-content">
+        <!-- <div class="div-image-container">
+          <img id="cover-img" class="image-fill" onclick="imageBrowser(coverImg)" />
+        </div>
+        <div class="div-line"></div>
+        <h1 class="aui-text-center aui-padded-5">便利设施</h1>
+        <div id="room-facility" class="aui-padded-0-10"></div>
+        <div class="div-line"></div>
+        <h1 class="aui-text-center aui-padded-5">摘要</h1>
+        <div id="room-remark" class="aui-padded-0-10 aui-text-justify"></div>
+        <h1 class="aui-text-center aui-padded-5">交通出行</h1>
+        <div id="traffic" class="aui-padded-0-10 aui-text-justify"></div>
+        <div class="div-line"></div> -->
+
+        <!--*****************评论***************** -->
+       <!--  <div id="room-comment" class="aui-hide">
+            <div id="comment-count" class="aui-text-center aui-padded-5"></div>
+            <div  class="aui-text-center"><img id="comment-avatar" class="image-avatar"/></div>
+            <div id="comment-username" class="aui-text-center"></div>
+            <div id="comment-time" class="aui-text-center"></div> 
+            <div id="comment-content" class="aui-padded-0-10 aui-text-justify"></div>
+
+            <div id="all-comment" class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="allComment()">查看所有评论</div>
+        </div> -->
+        <!--*****************评论***************** -->
+       <!--  <div id="attention-line" class="div-line aui-hide"></div>
+        <h1 class="aui-text-center aui-padded-5">其他注意事项与房屋守则</h1>
+        <div id="attention" class="aui-padded-0-10 aui-text-justify"></div> -->
+    </div>
+    <!--********************************** -->
+   
+    
+    <dir style="height: 50px;"></dir>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+
+    var imagePathArray;
+    // var coverImg;
+    // var page = 1, totalPage = 1;
+    var pageParam;
+    var landlordFlag;
+    var firstImg, secondImg;
+    apiready = function(){
+        api.parseTapmode();
+        // getDetail();
+        pageParam = api.pageParam;
+        landlordFlag = pageParam.landlordFlag;
+        pullRefresh(getDetail);
+        // if (landlordFlag) {
+        //     $api.after($api.byId('detailInfo'), ' <div class="aui-content-padded"><div class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="deleteRoom()">注销房源</div></div>');
+        // };
+       
+
+        window.onscroll = onscrollEvt;
+        window.ontouchmove = onscrollEvt;
+
+
+    }
+
+    function onscrollEvt(){
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            api.setFrameAttr({
+                name: 'room_detail_price_frm',
+                hidden: true
+            });
+        } else {
+             api.setFrameAttr({
+                name: 'room_detail_price_frm',
+                hidden: false
+            });
+        }
+        
+    }
+
+    function getDetail(){
+    	var params = new Object();
+    	
+    	params['userID'] = $api.getStorage('userId');
+    	params['houseID'] = pageParam.houseId;
+    	params['FKEY'] = DES3.APPKEY();
+    	api.ajax({
+               url:UrlProvider.room_detail,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          // api.refreshHeaderLoadDone();
+          // api.alert({
+          //     title: 'title', 
+          //     msg: 'msg_content:'+ JSON.stringify(ret)
+          // });
+          responseCallback(ret, err, function(){
+            if (ret.repDatas.length == 0) {
+                toast('查看房源出错')
+                    return;
+            }else{
+            	
+              var item = ret.repDatas[0];
+              initView(item);      
+
+                    
+
+            }
+           
+          }/*, true*/);
+        });
+    }
+    function getComment(){
+        var params = new Object();
+        var pageParam = api.pageParam;
+        params['userID'] = $api.getStorage('userId');
+        params['houseID'] = pageParam.houseId;
+        params['pageCount'] = 1;
+        params['pageIndex'] = 1;
+        params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+               url:UrlProvider.room_comment,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          api.refreshHeaderLoadDone();
+          responseCallback(ret, err, function(){
+            if (!ret.repDatas) {
+                // $api.addCls($api.byId('room-comment'),'aui-hide');
+                // $api.addCls($api.byId('attention-line'),'aui-hide');
+                return;
+            }else{
+                // $api.removeCls($api.byId('room-comment'),'aui-hide');
+                // $api.removeCls($api.byId('attention-line'),'aui-hide');
+                var item = ret.repDatas[0];     
+                var portrait = item.headImg;
+                if (!portrait) {
+                  portrait = '../image/user_default.png';
+                };
+                var commentHtml = '<div class="div-line"></div><div id="room-comment"><div id="comment-count" class="aui-text-center aui-padded-5">'+ret.repDatas[1].totalPage+'条评论</div><div  class="aui-text-center"><img id="comment-avatar" class="image-avatar" src="'+portrait +'"/></div><div id="comment-username" class="aui-text-center">'+item.nickName+'</div>'+'<div id="comment-content" class="aui-padded-0-10 aui-text-center">'+ item.content+'</div><div id="all-comment" class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="allComment()">查看所有评论</div></div>';
+                $api.after($api.byId('traffic'), commentHtml);
+                setTimeout("api.parseTapmode()", 100);
+
+                // $api.html($api.byId('comment-count'), ret.repDatas[1].totalPage + '条评论')
+                // var portrait = item.headImg;
+                // if (!portrait) {
+                //   portrait = '../image/user_default.png';
+                // };
+                // $api.byId('comment-avatar').src = portrait;
+                // $api.html($api.byId('comment-username'), item.nickName);
+                // $api.html($api.byId('comment-time'), item.time);  
+                // $api.html($api.byId('comment-content'), item.content);  
+                // setTimeout("api.parseTapmode()", 100);  // 等0.1秒在执行
+            }
+           
+          }/*, true*/);
+        });
+    }
+
+    function initView(roomInfo){
+        // if (landlordFlag) {
+        //     api.refreshHeaderLoadDone();
+        // }else{
+            getComment();
+        // }
+        if ( 'excellent_room_frm' == pageParam.fromFrame || 'room_list_frm' == pageParam.fromFrame ) {
+            pageParam.roomName = roomInfo.title;
+            api.openFrame({
+                name: 'room_detail_extra_frm',
+                url: 'room_detail_extra_frm.html',
+                bounces: false,
+                // pageParam:{
+                //             houseId: api.pageParam.houseId,
+                //             roomName: roomInfo.title,
+                //             fromFrame : pageParam.fromFrame,
+                //         },
+                pageParam: pageParam,
+                rect: {
+                    x: 0,
+                    y: api.winHeight - 45,
+                }
+            })
+        }
+        
+        
+
+        imagePathArray = roomInfo.pics;
+        var roomImage = '../image/img_default.png';
+        if (imagePathArray.length) {
+            roomImage = imagePathArray[0];
+        };
+
+
+        var captions = new Array();
+        for(var m = 0; m < imagePathArray.length; m++){
+            captions.push( (m + 1) + '/' + imagePathArray.length);
+        }   
+        var UIScrollPicture = api.require('UIScrollPicture');
+        UIScrollPicture.open({
+            rect: {
+                h: 200
+            },
+            data: {
+                paths: imagePathArray,
+                captions: captions
+            },
+            styles: {
+                caption: {
+                    height: 35,
+                    color: '#E0FFFF',
+                    size: 13,
+                    bgColor: 'rgba(255,255,255,0)',
+                    position: 'overlay',
+                    alignment: 'center'
+                },
+                // indicator: {
+                //     align: 'center',
+                //     color: '#FFFFFF',
+                //     activeColor: '#DA70D6'
+                // }
+            },
+            placeholderImg: 'widget://image/img_default.png',
+            contentMode: 'scaleToFill',
+            interval: 5,
+            loop: true,
+            fixedOn: 'room_detail_frm',
+            fixed: false,
+            // auto: false
+        },function( ret, err ){
+            // if( ret ){
+            //      alert( JSON.stringify( ret ) );
+            // }else{
+            //      alert( JSON.stringify( err ) );
+            // }
+        });
+        api.openFrame({
+            name: 'room_detail_price_frm',
+            url: 'room_detail_price_frm.html',
+            bounces: false,
+            pageParam:{
+                        price: roomInfo.price,
+                    },
+            rect: {
+                x: 15,
+                y: 190,
+                w: 120,
+                h: 38
+            }
+        });
+
+
+
+        var portrait = roomInfo.headImg;
+        if (!portrait) {
+          portrait = '../image/user_default.png';
+        };
+        var userStateIcon;
+        if ('正常' == roomInfo.state) {
+            userStateIcon = '../image/unverify.png';
+        }else{
+            userStateIcon = '../image/verified.png';
+        }
+       
+        // var starLevel = '<div id="star-level" class="aui-text-center"><a class="aui-iconfont aui-icon-favorfill"></a><a class="aui-iconfont aui-icon-favorfill"></a><a class="aui-iconfont aui-icon-favorfill"></a><a class="aui-iconfont aui-icon-favorfill"></a><a class="aui-iconfont aui-icon-favorfill"></a></div>';
+        var starLevelStr = '';
+        // if (!landlordFlag) {
+            var starLevel = parseInt(roomInfo.review);
+            starLevelStr = '<div id="star-level" class="aui-text-center">';
+            for(var i = 0; i < starLevel; i++){
+                starLevelStr += '<a class="aui-iconfont aui-icon-favorfill"></a>';
+            }
+            for(var i = 5; i > starLevel; i--){
+                starLevelStr += '<a class="aui-iconfont aui-icon-favor"></a>';
+            }
+            starLevelStr += '</div>'
+        // }
+        var headerHtml = /*'<div class="div-image-container"><img id="room-image" class="image-fill" onclick="multipleImageBrowser()" src="'+roomImage+'"/><span id="imageIndex">1/'+ roomInfo.pics.length+'</span></div>*/ '<div id="room-title" class="aui-text-center app-title">'+roomInfo.title+'</div><div  class="aui-text-center"><img id="avatar" class="image-avatar" src="'+portrait+'"/></div><div id="name" class="aui-text-center" style="font-size: 17px;">'+roomInfo.nickName+'</div><div class="aui-text-center"><img id="verify-state" src="'+ userStateIcon +'"/></div>'+ starLevelStr+'<div id="address" class="aui-text-center">'+roomInfo.address+'</div>';
+        $api.html($api.byId('header'), headerHtml);
+        // $api.text($api.byId('imageIndex'), '1/' + roomInfo.pics.length);
+        // var roomImage = '../image/user_default.png';
+        // if (imagePathArray.length) {
+        //     roomImage = imagePathArray[0];
+        // };
+        // $api.byId('room-image').src = roomImage;
+        // $api.html($api.byId('room-title'), roomInfo.title);
+        // var portrait = roomInfo.headImg;
+        // if (!portrait) {
+        //   portrait = '../image/user_default.png';
+        // };
+        // $api.byId('avatar').src = portrait;
+        // $api.html($api.byId('name'), '这是名字');
+        // $api.html($api.byId('address'), roomInfo.address);
+        
+
+        
+        firstImg = imagePathArray[1];
+        if (!firstImg) {
+            firstImg = '../image/img_default.png';
+        };
+        var secondImgHtml = '';
+        if (imagePathArray.length > 2) {
+            secondImg = imagePathArray[2];
+            secondImgHtml = '<div class="div-image-container"><img class="image-fill" onclick="multipleImageBrowser(2)" src="'+secondImg+'"/></div><div class="div-line"></div>';
+        };
+        var attention = roomInfo.attention;
+        if (!attention) {
+          attention = '暂时没有。';
+        };
+        var deviceIcons = ['f_necessity.png', 'f_shampoo.png', 'f_television.png', 'f_air_conditioning.png' , 'f_heating.png', 'f_wifi.png', 'f_hot_water.png', 'f_washing_machine.png', 'f_swimming_pool.png', 'f_ drier.png', 'f_breakfast.png', 'f_free_park.png', 'f_gymnasium.png', 'f_lift.png','f_fireplace.png', 'f_party.png', 'f_smoking_room.png', 'f_barrier_free.png', 'f_reception.png'];
+        var deviceNames = ['生活必需品','洗发水','电视','空调','暖气','Wi-Fi网络','热水淋浴','洗衣机','游泳池','烘干机','早餐','免费停车','健身房','电梯','室内壁炉','聚会派对','吸烟室','无障碍设施','免费接送']
+        var devicesHtml = '<ul class="aui-grid-sixteen">'
+        for(var i = 0; i < roomInfo.devices.length; i++){
+            var tempIndex = parseInt(roomInfo.devices[i]);
+            var deviceName =  deviceNames[tempIndex];
+            var deviceNameClass = 'device-name';
+            if (deviceName.length > 4) {
+                deviceNameClass = 'device-name-small';
+            }
+            devicesHtml += '<li class="aui-col-xs-3 aui-text-center"><image src="../image/'+ deviceIcons[tempIndex] +'"/><p class="'+ deviceNameClass+'">'+deviceName+'</p></li>'
+        }
+        devicesHtml += '</ul>';
+        var detailInfoHtml = '<h1 class="aui-text-center aui-padded-5">摘要</h1><div id="room-remark" class="aui-padded-0-10 aui-text-center detail-text">'+roomInfo.remark+'</div><div class="div-line"></div><div class="div-image-container"><img id="cover-img" class="image-fill" onclick="multipleImageBrowser(1)" src="'+firstImg+'"/></div><h1 class="aui-text-center aui-padded-5">便利设施</h1><div id="room-facility" class="aui-padded-0-10">'+ devicesHtml +'</div><div class="div-line"/>'+secondImgHtml +'<h1 class="aui-text-center aui-padded-5">交通出行</h1><div id="traffic" class="aui-padded-0-10 aui-text-center detail-text">'+roomInfo.traffic+'</div><div class="div-line"></div><h1 class="aui-text-center aui-padded-5">其他注意事项与房屋守则</h1><div id="attention" class="aui-padded-0-10 aui-text-center detail-text">'+attention+'</div>'
+        $api.html($api.byId('detailInfo'), detailInfoHtml);
+
+        // coverImg = roomInfo.picCoverID;
+        // if (!coverImg) {
+        //     coverImg = '../image/user_default.png';
+        // };
+        // $api.byId('cover-img').src = coverImg;
+        //  $api.html($api.byId('room-facility'), roomInfo.devices.join());
+        // $api.html($api.byId('room-remark'), roomInfo.remark);
+        // $api.html($api.byId('traffic'), roomInfo.traffic);
+        // var attention = roomInfo.attention;
+        // if (!attention) {
+        //   attention = '暂时没有。';
+        // };
+        // $api.html($api.byId('attention'), attention);
+        
+
+        // api.openFrame({
+        //     name: 'room_detail_addtion_frm',
+        //     url: 'room_detail_addtion_frm.html',
+        //     bounces: false,
+        //     pageParam:{
+        //                 roomInfo: roomInfo
+        //             },
+        //     rect: {
+        //         x: 0,
+        //         y: topBarHeight + headerPos.h + 190,
+        //         w: headerPos.w,
+        //         h: 'auto'
+        //     }
+        // })
+        setTimeout("api.parseTapmode()", 100);
+        setTimeout(function(){
+            openMap(roomInfo);
+        }, 200);
+    }
+
+    function openMap(roomInfo){
+        var headerPos = $api.offset($api.byId('header'));
+        var map = api.require('bMap');
+        map.open({
+            rect: {
+                x: 0,
+                y: headerPos.t + headerPos.h + 10,
+                h:180
+            },
+            center: {
+                lon: roomInfo.longitude,
+                lat: roomInfo.latitude
+            },
+            zoomLevel: 16,
+            showUserLocation: true,
+            fixedOn: 'room_detail_frm',
+            fixed: false
+        }, function(ret){
+            
+        });
+        // map.setMapAttr({
+        //   zoomEnable: false,
+        //   scrollEnable: false
+        // });
+        map.addAnnotations({
+            annotations: [{
+                id: 1, lon: roomInfo.longitude, lat: roomInfo.latitude
+            },
+           
+           ],
+            icon: 'widget://image/map_marker.png',
+            draggable: false
+        }, function(ret){
+            // if(ret){
+            //     alert(ret.id);
+            // }
+        });
+    }
+
+    function allComment(){
+        openWindow(function(delay){
+
+              api.openWin({
+                name: "comment_list_win",
+                url: "comment_list_win.html",
+                pageParam:api.pageParam,
+                delay: delay
+              })     
+            })
+    }
+
+    function deleteRoom(){
+        confirmDialog('注销房源?', deleteRoomRequest);
+    }
+    function deleteRoomRequest(){
+
+        var params = new Object();
+        params['userID'] = $api.getStorage('userId');
+        params['houseID'] = pageParam.houseId;
+        params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+        url:UrlProvider.delete_room,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        responseCallback(ret, err, function(){
+            api.closeWin();
+            api.execScript({
+                name: 'slide',
+                frameName: 'publish_room_frm',
+                script: 'deleteRoom('+ pageParam.index + ');'
+            });
+        }/*, true*/);
+      });
+    }
+</script>
+</html>

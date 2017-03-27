@@ -1,0 +1,311 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>fixedPane</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+    <style>
+        html, body {
+            background-color: #fdfbfb;
+        }
+        
+        header {
+            /*height:200px;*/
+            height:100px;
+            display:-webkit-box;
+            -webkit-box-orient:vertical;
+        }
+        header>div {
+            display:-webkit-box;
+            -webkit-box-pack:center;
+            -webkit-box-align:center;
+            -webkit-box-flex:1;
+        }
+
+        #logo>img {
+           /* width:100px;
+            height:100px;*/
+             width:80px;
+            height:80px;
+            border: 1px solid #fff;
+            border-radius: 50%;
+        }
+        
+        .item{
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+        .item-small{
+            padding: 7.5px 20px;
+        }
+        .item-smaller{
+            padding: 4.5px 20px;
+        }
+        .item-smaller-ios{
+            padding: 2.5px 20px;
+        }
+        #notice{
+            position: absolute;
+            top: 0.4rem;
+            left: 35%;
+            background-color: red;
+            /*display: none;*/
+        }
+
+        #switch-mode{
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: #f66;
+            font-size: 20px;
+            color: white;
+            margin-top: 7px;
+        }
+        /*.switch-mode-user{
+            margin-top: 65px;
+        }
+        .switch-mode-rent{
+            margin-top: 15px;
+        }*/
+        /*********new style**********/
+       /* header {
+            height:80px;
+            display:-webkit-box;
+            -webkit-box-orient:vertical;
+        }
+         #logo>img {
+            width:50px;
+            height:50px;
+            border: 1px solid #fff;
+            border-radius: 50%;
+        }
+        .item{
+            padding: 12px 20px;
+            font-size: 18px;
+        }
+        #switch-mode{
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: #f66;
+            font-size: 20px;
+            color: white;
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            bottom: 10px;
+            padding-right: 15%
+        }*/
+        /*********new style**********/
+        .item-hov{
+            background-color: #f66;
+            color: white;
+        }
+        .div-selected{
+            background-color: #f66;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- <div class="div-blank"></div> -->
+    <div style="height:8px;"></div>
+    <div id="main">
+     <header id="header">
+        <div id="logo">
+            <img src="../image/user_default.png"/>
+        </div>
+
+    </header>
+    <div style="height:8px;"></div>
+   <div id="menu">
+       <!-- <div class="item" tapmode="item-hov" onclick="openPane('publishOrder', '发布订单')">发布订单</div>
+       <div class="item" tapmode="item-hov" onclick="openPane('readyCheckIn', '准备入住')">准备入住</div>
+       <div class="item" style="position: relative;" tapmode="item-hov" onclick="openPane('messageCenter', '消息中心')"><span>消息中心</span><span class="aui-badge aui-badge-danger notice" id="notice">0</span></div>
+       <div class="item" tapmode="item-hov" onclick="openPane('excellentRoom', '优质房源')">优质房源</div>
+       <div class="item" tapmode="item-hov" onclick="openPane('verify', '实名认证')">实名认证</div>
+       <div class="item" tapmode="item-hov" onclick="openPane('setting', '设置')">设置</div> -->
+
+           <!--  <div class="item" tapmode="item-hov" onclick="openPane('landlord_order_list', '我要抢单', this)">我要抢单</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('reception_list', '准备接待', this)">准备接待</div>
+            <div class="item" style="position: relative;" tapmode="item-hov" onclick="openPane('message_center', '消息中心', this)"><span>消息中心</span><span class="aui-badge aui-badge-danger notice" id="notice">0</span></div>
+            <div class="item" tapmode="item-hov" onclick="openPane('publish_room', '发布房源', this)">发布房源</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('pay_method', '收款方式', this)">收款方式</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('verify', '实名认证', this)">实名认证</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('help', '帮助与投诉', this)">帮助与投诉</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('setting', '设置', this)">设置</div> -->
+
+
+           <!--  <div class="item" tapmode="item-hov" onclick="openPane('publish_order', '发布订单', this)">发布订单</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('user_order_list', '准备入住', this)">准备入住</div>
+            <div class="item" style="position: relative;" tapmode="item-hov" onclick="openPane('message_center', '消息中心', this)"><span>消息中心</span><span class="aui-badge aui-badge-danger notice" id="notice">0</span></div>
+            <div class="item" tapmode="item-hov" onclick="openPane('excellent_room', '优质房源', this)">优质房源</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('verify', '实名认证', this)">实名认证</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('help', '帮助与投诉', this)">帮助与投诉</div>
+            <div class="item" tapmode="item-hov" onclick="openPane('setting', '设置', this)">设置</div>; -->
+
+   </div>
+
+   <div id="switch-mode">切换到出租模式</div>
+   <div style="height:20px;"></div>
+</div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script>
+    var modeFlag = false;
+    var msgNum = 0;
+    apiready = function () {
+        api.setStatusBarStyle({
+            style: 'dark',
+            color: '#000'
+        });
+        var main = $api.byId('main');
+        main.style.width = (api.frameWidth - 52)+'px';
+        $api.fixStatusBar($api.byId('header'));
+        var headImg = $api.getStorage('headImg');
+        if (headImg) {
+            $api.first($api.byId('logo')).src = headImg;
+        };
+        modeFlag = ($api.getStorage('modeFlag') == "true");
+        // alert('get=' + $api.getStorage('modeFlag') + ',modeFlag=' + modeFlag)
+        switchMode();
+        
+        
+        $api.addEvt($api.byId('switch-mode'), 'click', function(){
+            switchMode();
+        }, true);
+
+        registerDivStyleEvent('fixed_pane_div_style');
+        api.addEventListener({
+            name: 'msg_event'
+        }, function(ret, err){
+            updateMsgNum(ret.value.msgNum);
+        });
+
+    };
+    function adjustStyle(){
+        var clsName;
+        if (api.screenHeight < 1000) {
+            clsName = 'item-smaller';
+            if ("ios" == api.systemType) {
+                clsName = 'item-smaller-ios';
+            }
+        }else if (api.screenHeight < 1200) {
+            clsName = 'item-small';
+        }else{
+            return;
+        }
+        var ret = document.getElementsByClassName('item');
+        for(var index in ret){
+            $api.addCls(ret[index], clsName);
+        }
+    }
+    function openPane(eventName, frameTitle, el, menuIndex){
+        var childEl = $api.first($api.byId('menu'));
+
+        do{
+            if (childEl == el) {
+                continue;
+            };
+            if ($api.hasCls(childEl, 'div-selected')) {
+                $api.removeCls(childEl, 'div-selected');
+                break;
+            };
+        }while(childEl = childEl.nextSibling);
+
+       
+        $api.addCls(el, 'div-selected');
+        api.sendEvent({
+            name: eventName,
+            extra: {frameTitle: frameTitle}
+        });
+        api.closeSlidPane();
+
+        $api.setStorage('modeFlag', !modeFlag);
+        $api.setStorage('eventName', eventName);
+        $api.setStorage('frameTitle', frameTitle);
+        // $api.setStorage('menuIndex', menuIndex);
+    }
+
+    function switchMode(){
+        var ret;
+        if (!modeFlag) {
+            ret= '<div class="item" id="publish_order" tapmode="item-hov" onclick="openPane(\'publish_order\', \'发布订单\', this,0)">发布订单</div><div class="item" id="user_order_list" tapmode="item-hov" onclick="openPane(\'user_order_list\', \'准备入住\', this,1)">准备入住</div><div class="item" id="message_center" style="position: relative;" tapmode="item-hov" onclick="openPane(\'message_center\', \'消息中心\', this,2)"><span>消息中心</span><span class="aui-badge aui-badge-danger aui-hide" id="notice"></span></div><div class="item" id="excellent_room" tapmode="item-hov" onclick="openPane(\'excellent_room\', \'优质房源\', this,3)">优质房源</div><div class="item" id="verify" tapmode="item-hov" onclick="openPane(\'verify\', \'实名认证\', this,4)">实名认证</div><div class="item" id="help" tapmode="item-hov" onclick="openPane(\'help\', \'帮助与投诉\', this,5)">帮助与投诉</div><div class="item" id="setting" tapmode="item-hov" onclick="openPane(\'setting\', \'设置\', this,6)">设置</div><div class="item aui-invisible">空白</div><div class="item aui-invisible">空白</div>';
+            var switchModeEl = $api.byId('switch-mode');
+            // $api.html(switchModeEl, '切换到出租模式');
+            $api.html(switchModeEl, '我有房');
+            $api.removeCls(switchModeEl, 'switch-mode-rent');
+            $api.addCls(switchModeEl, 'switch-mode-user');
+            modeFlag = true;
+        }else{
+             ret= '<div class="item" id="landlord_order_list" tapmode="item-hov" onclick="openPane(\'landlord_order_list\', \'我要抢单\', this, 0)">我要抢单</div><div class="item" id="landlord_specific_order_list" tapmode="item-hov" onclick="openPane(\'landlord_specific_order_list\', \'指定订单\', this, 0)">指定订单</div><div class="item" id="reception_list" tapmode="item-hov" onclick="openPane(\'reception_list\', \'准备接待\', this,1)">准备接待</div><div class="item" id="message_center" style="position: relative;" tapmode="item-hov" onclick="openPane(\'message_center\', \'消息中心\', this,2)"><span>消息中心</span><span class="aui-badge aui-badge-danger aui-hide" id="notice"></span></div><div class="item" id="publish_room" tapmode="item-hov" onclick="openPane(\'publish_room\', \'发布房源\', this,3)">发布房源</div><div class="item" id="pay_method" tapmode="item-hov" onclick="openPane(\'pay_method\', \'收款方式\', this,9)">收款方式</div><div class="item" id="verify" tapmode="item-hov" onclick="openPane(\'verify\', \'实名认证\', this,4)">实名认证</div><div class="item" id="help" tapmode="item-hov" onclick="openPane(\'help\', \'帮助与投诉\', this,5)">帮助与投诉</div><div class="item" id="setting" tapmode="item-hov" onclick="openPane(\'setting\', \'设置\', this,6)">设置</div>';
+            var switchModeEl = $api.byId('switch-mode');
+            // $api.html(switchModeEl, '切换到房客模式');
+            $api.html(switchModeEl, '订酒店');
+            $api.removeCls(switchModeEl, 'switch-mode-user');
+            $api.addCls(switchModeEl, 'switch-mode-rent');
+            modeFlag = false;
+        }
+        $api.html($api.byId('menu'), ret);
+        adjustStyle();
+        // return false;
+        // api.parseTapmode();
+        // var e = window.event;
+        // if (e) {
+        //     e.preventDefault(); 
+        // };
+        // var menuName = $api.getStorage('frameTitle');
+        // var menuIndex = $api.getStorage('menuIndex');
+        // if ( menuName && menuIndex) {
+        //     updateDivStyle(menuName, menuIndex)
+        // }else{
+        //      updateDivStyle('发布订单', 0)
+        // };
+        var eventName = $api.getStorage('eventName');
+        updateDivStyle(eventName ? eventName : 'publish_order');
+        updateMsgNum(msgNum);
+    }
+
+    function registerDivStyleEvent(name){
+        api.addEventListener({
+            name: name
+        }, function(ret, err){
+            updateDivStyle(ret.value.name);
+        });
+    }
+
+    function updateDivStyle(elId){
+       
+        // var curIndex = 0;
+        var childEl = $api.first($api.byId('menu'));
+
+        do{
+
+            // if ($api.text(childEl) == menuName) {
+            if(childEl.getAttribute('id') == elId){
+                $api.addCls(childEl, 'div-selected');
+            }else{
+                if ($api.hasCls(childEl, 'div-selected')) {
+                    $api.removeCls(childEl, 'div-selected');
+                };
+            }
+            
+            // curIndex++;
+        }while(childEl = childEl.nextSibling);
+    }
+
+  
+    function updateMsgNum(msgNumArg){
+        msgNum = msgNumArg;
+        var notice = $api.byId('notice');
+        if (!msgNumArg || 0 == msgNumArg) {
+            $api.addCls(notice, 'aui-hide');
+        }else{
+            $api.removeCls(notice, 'aui-hide');
+        }
+        
+        $api.text(notice, msgNumArg);
+    }
+</script>
+</html>

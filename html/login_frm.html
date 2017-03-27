@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+body {
+    height: auto;
+}
+
+.aui-btn {
+  margin-bottom: 15px;
+  color: #f66;
+  height: 45px !important;
+  padding: 0px !important;
+  line-height: 25px !important;
+}
+
+#logo{
+  display: block;
+  margin: 20% auto 30px;
+  width: 200px;
+}
+.logo-small{
+  margin-top: 10px !important
+}
+.login-type{
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+  /*margin-top: -10px !important;*/
+  margin-right: 15px;
+}
+
+#service-protocol{
+  position: absolute;
+  bottom: 15px;
+  left: 0px;
+  right: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 310px;
+  
+}
+</style>
+<body>
+    <div class="aui-content-padded">
+        <img src="../image/logo.png" id="logo">
+        <!-- <div class="aui-btn aui-btn-block aui-btn-info" tapmode onclick="login()"></div>
+        <div class="aui-btn aui-btn-block aui-btn-info" tapmode onclick="login()">微博登录</div>
+        <div class="aui-btn aui-btn-block aui-btn-info" tapmode onclick="login()">QQ登录</div> -->
+       
+        <button class="aui-btn aui-btn-app aui-btn-block aui-btn-outlined" tapmode onclick="loginByWeibo()"><img src="../image/sina_weibo.png" class="login-type"/>新浪微博登录</button>
+        <button id="btn-qq" class="aui-btn aui-btn-app aui-btn-block aui-btn-outlined" tapmode onclick="loginByQQ()"><img src="../image/tencent_qq.png" class="login-type"/>QQ登录</button>
+        <button id="btn-weixin" class="aui-btn aui-btn-app aui-btn-block aui-btn-outlined" tapmode onclick="loginByWeixin()"><img src="../image/tencent_weixin.png" class="login-type"/>微信登录</button>
+        <button class="aui-btn aui-btn-app aui-btn-block aui-btn-outlined" tapmode onclick="openWin('loginbyphone_win')"><img src="../image/mobile_phone.png" class="login-type"/>手机登录</button>
+
+        
+    </div>
+    <p id="service-protocol">登录即表示我同意来来订房的<a tapmode onclick="openWin('terms_of_service_win')">服务条款</a>与<a tapmode onclick="openWin('privacy_greement_win')">隐私协议</a></p>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+	apiready = function(){
+        api.parseTapmode();
+        if (api.pageParam.exitFlag) {
+          setTimeout("closeSlidLayout()", 300);
+
+        }
+        if ("ios" == api.systemType) {
+          var flag;
+          var wx = api.require('wx');
+          wx.isInstalled(function(ret, err){
+              if(ret.installed){
+                  // alert("当前设备已安装微信客户端");
+              }else{
+                  // alert('当前设备未安装微信客户端');
+                  flag = true;
+                  $api.addCls($api.byId('btn-weixin'), 'aui-hide');
+              }
+          });
+
+          if(!flag && api.screenHeight < 1000){
+            $api.addCls($api.byId('logo'), 'logo-small');
+          }
+          
+        }
+        // else{
+             $api.setStorage('userNum','20160301004');
+             $api.setStorage('userId', '5856465283');
+             $api.setStorage('headImg', 'http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100');
+             api.openSlidLayout({
+                 type: 'left',
+                 fixedPane:{
+                 name: "fixed",
+                 url: "fixed.html",
+                 // pageParam:{headImg:headImgArg}
+                },
+                slidPane:{
+                 // name: "publish_order_win",
+                 // url: "publish_order_win.html"
+                 name:"slide",
+                 url: "slide.html",
+                 // pageParam:{headImg:headImgArg}
+                }
+              },function(ret,err){
+           
+              });
+        // }
+        
+        
+    }
+    
+	function login(arg0, headImgArg, userId, loginWay){
+    
+	var appkey = DES3.APPKEY();
+	showLoading("登录中...");
+	
+  var params = encodeURIComponent("{" + arg0 + ",'FKEY':'" + appkey + "'}");
+
+	 api.ajax({
+	       url:UrlProvider.login,
+		    method: 'post',
+		    headers:{"content-type": "application/x-www-form-urlencoded"},
+		    data:{body:
+				"reqData=" + params
+			}	
+       },function(ret,err){
+       		responseCallback(ret, err, function(){
+            var userFlag = -1;
+            if (ret.resInfo.indexOf('新用户') > 0) {
+              userFlag = 1;
+            }
+            $api.setStorage('userNum',ret.repDatas[0].userNum);
+            $api.setStorage('userId', userId);
+            $api.setStorage('headImg', headImgArg);
+            $api.setStorage('loginWay', loginWay);
+       			api.openSlidLayout({
+                      type: 'left',
+	                   fixedPane:{
+	                   	name: "fixed",
+	                   	url: "fixed.html",
+                      // pageParam:{headImg:headImgArg}
+	                   },
+	                   slidPane:{
+	                   	// name: "publish_order_win",
+	                   	// url: "publish_order_win.html"
+                      pageParam: {
+                        userFlag: userFlag
+                      },
+                      name:"slide",
+                      url: "slide.html"
+	                   }
+                   },function(ret,err){
+                   
+                   });
+       		}/*, true*/);
+       });
+	};
+  function loginByWeibo(){
+    var weibo = api.require('weibo');
+    weibo.auth(function(ret,err){
+      if (ret.status) {
+        weibo.getUserInfo({
+          token: ret.token,
+          userId: ret.userId
+        },function(ret,err){
+          if (ret.status) {
+            // alert(JSON.stringify(ret.userInfo));return;
+            var info  = ret.userInfo;
+            var gender = info.gender;
+            if (gender == 'f') {
+                gender='女';
+            }else{
+              gender='男';
+            }
+            var arg = "";//获取字段，组合参数
+            login(arg, info.avatar_large, info.id, '微博');
+          }else{
+             // api.alert({msg:err.msg});
+          }
+        });
+      }
+    });
+  }
+  function loginByQQ(){
+    var obj = api.require('qq');
+    obj.login(function(ret,err){
+      if (ret.status) {
+        var openId = ret.openId;
+        
+        obj.getUserInfo(function(ret,err) {
+         if (ret.status) {
+            // alert(JSON.stringify(ret.info));
+            var info  = ret.info;
+            var arg = "";//获取字段，组合参数
+            login(arg, info.figureurl_qq_1, openId, 'QQ');
+        }else{
+          api.alert({msg:err.msg});
+        }
+      });
+      }else{
+        if(api.systemType=='android'){
+          obj.installed(function(ret,err){
+            if(ret.status){
+             // api.alert({msg: "安装"});
+           }else{
+            alert("您没有安装QQ");
+          } 
+        });
+
+        }
+      };
+    });
+
+  }
+  function loginByWeixin(){
+    var wx = api.require('wx');
+    wx.auth(function(ret, err){
+    if(ret.status){
+        wx.getToken({
+            code: ret.code
+        },function(ret, err){ 
+             
+            if(ret.status){
+                var wx = api.require('wx');
+                //获取用户信息
+                var accessToken = ret.accessToken;
+                var openId = ret.openId;
+                wx.getUserInfo({
+                    accessToken: ret.accessToken,
+                    openId: ret.openId
+                }, function(ret,err){ 
+
+                    if(ret.status){
+                        
+                        var gender='';
+                        if (ret.sex == 1) {
+                            gender = '男';
+                        }else{
+                          gender = '女';
+                        }
+
+
+                        var arg = "";//获取字段，组合参数
+                        login(arg, ret.headimgurl, ret.openid, '微信');
+                    }
+                });
+            }else{
+              var wx = api.require('wx');
+              wx.refreshToken({
+                  dynamicToken: ret.dynamicToken
+              },function(ret,err){ 
+                  if(ret.status){
+                      alert(JSON.stringify(ret));
+                  }else{
+                      alert(err.code);
+                  }
+              });
+            }
+        });
+        
+    }else{
+        if(api.systemType=='android' && err.code==3){
+            alert("您没有安装微信");
+        }
+    }
+})
+  }
+  
+
+  function openWin(winName){
+    openWindow(function(delay){
+      api.openWin({
+        name: winName,
+        url: winName + '.html',
+        delay: delay
+      })     
+    })
+  }
+  function closeSlidLayout(){
+    api.closeWin({name:'slidLayout'});
+  }
+</script>
+</html>

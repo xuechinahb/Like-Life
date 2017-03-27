@@ -1,0 +1,14 @@
+@charset "UTF-8";
+
+.text-main{
+	font-size: 18px;
+	color: #FF6666 !important;
+}
+
+.aui-arrow-right:after{
+	color: #FF6666 !important;
+}
+
+.text-secondary{
+	color: #737373;
+}

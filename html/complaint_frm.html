@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    #text-upload-image{
+        margin: 10px 0px 5px;
+    }
+    ul li{
+        position: relative;
+        padding: 5px;
+    }
+    /*.aui-img-object{
+        height: 30px;
+        width: 40px;
+    }*/
+    /*li{
+        height: 105px;
+        width: 80px;
+    }*/
+    .aui-icon-roundclosefill{
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        /*z-index: 2;*/
+    }
+</style>
+<body>
+    <div class="aui-content-padded">
+      <div class="subtitle">投诉内容</div>
+      <textarea class="app-border" cols="50" rows="6" placeholder="请输入投诉内容+手机号码" id="content"></textarea>
+      <div id="text-upload-image" class="subtitle">上传图片</div>
+      <ul class="aui-list-view aui-grid-view" id="photoList">
+        <li id="addImgBtn" class="aui-list-view-cell aui-img aui-col-xs-4">
+            <img class="aui-img-object" src="../image/addImgBtn.png" tapmode onclick="selectImage(6)">
+        </li>
+    </ul>
+    <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit()" id="submit">提交</div>
+    <div class="div-blank"></div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/upload.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+
+<script type="text/javascript">
+    // var listHeight;
+    // var imagePathList;
+    // var imagePathArray;
+    apiready = function(){
+        api.parseTapmode();
+        // listHeight = api.winWidth/3;
+        // imagePathArray = new Array();
+
+    }
+
+
+   
+    function submit(){
+        if (!$api.val($api.byId('content'))) {
+            toast('请输入投诉内容')
+            return false;
+        };
+        if (imagePathArray.length == 0) {
+            toast('请上传图片');
+            return false;
+        };
+
+        showLoading('正在提交...');
+
+        upload(imagePathArray,  function(imageUrlArray){
+            if(!imageUrlArray.length){
+                api.hideProgress();
+                toast('上传图片失败');
+                return false;
+            }
+            var appkey = DES3.APPKEY();
+            var params = encodeURIComponent("");//填入参数
+            
+            api.ajax({
+               url:UrlProvider.complaint,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + params
+            }   
+        },function(ret,err){
+            responseCallback(ret, err, function(){
+                
+                api.alert({
+                    title: '提示',
+                    msg: '您的投诉提交成功',
+                    buttons:['确定']
+                },function(ret,err){
+                    if(ret.buttonIndex == 1){
+                        api.closeWin();
+                    }
+                });
+            });
+        });
+        })
+        
+    }
+</script>
+</html>

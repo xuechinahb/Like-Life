@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>侧边导航</title>
+    <style>
+        html {
+            height: 100%;
+            background-color: #fff;
+        }
+        body {
+            background-color: #fff;
+            padding: 0;
+            margin: 0;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            height: 100%;
+            -webkit-box-orient: vertical;
+            -webkit-flex-flow: column;
+            flex-flow: column;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript" src="./script/api.js"></script>
+<script>
+	function openGuide(){//显示引导页
+		api.openFrame({
+	        name: 'guide_frm',
+	        url: 'html/guide_frm.html',
+//			url:'html/backup/test.html',
+	        rect: {
+		        x:0,
+		        y:0,
+		        w:'auto',
+		        h:'auto'
+	        }
+        });
+        
+//      api.openWin({
+//	        name: 'guide_frm',
+//	        url: 'html/guide_frm.html'
+//      });
+       }
+        
+	function openLogin(){//打开登录页
+		api.openFrame({
+	        name: 'login_win',
+	        url: 'html/login_win.html',
+	        rect: {
+		        x:0,
+		        y:0,
+		        w:'auto',
+		        h:'auto'
+	        }
+        });
+	
+	}
+	 
+    apiready = function () {
+        /** 测试账号 **/
+        $api.setStorage('userNum','20160301004');
+        $api.setStorage('userId', '5856465283');
+        $api.setStorage('headImg', 'http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100');
+        /** 测试账号 **/
+        
+		var showGuide = $api.getStorage('showGuide');
+		
+//  		$api.setStorage('showGuide',false);
+		var userId = $api.getStorage('userId');
+		if(!showGuide){
+			openGuide();
+		}else if ( !userId){
+			openLogin();
+		}else {
+            $api.setStorage('skipLoginWin',true);
+			api.openSlidLayout({
+                type: 'left',
+                fixedPane:{
+
+                		name:'fixed',
+                		url: 'html/fixed.html'
+                },
+                slidPane:{
+                		name: 'slide',
+                		url: 'html/slide.html'
+                }
+            },function(ret,err){
+            	//coding...
+            });
+		}
+    
+//      api.openSlidLayout({
+//          type: 'left',
+//          leftEdge: 60,
+//          fixedPane: {
+//              name: 'fixed',
+//              url: 'html/fixed.html'
+//          },
+//          slidPane: {
+//              name: 'slide',
+//              url: 'html/slide.html'
+//          }
+//      }, function (ret) {
+//
+//      });
+   
+//      api.openWin({
+//	        name: 'aui_demo',
+//	        url: 'html/aui_demo.html'
+//      });
+
+    }
+    
+   
+</script>
+</body>
+</html>

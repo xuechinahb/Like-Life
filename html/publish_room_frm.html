@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	#add a{
+		/*height: 40px;
+		line-height: 40px;*/
+		/*margin: 0px auto;*/
+		/*display: block;*/
+		text-align: center;
+		color: #f66;
+	}
+  ul{
+    margin: 0px !important;
+  }
+    .room-cell{
+        position: relative;
+        padding: 0px;
+        height: 110px;
+    }
+    .room-cell:last-child:after{
+      border-bottom: 0px solid #c8c7cc;
+    }
+    li img{
+        height: 100%;
+        width: 170px;
+        padding: 5px;
+    }
+    li span{
+        position: absolute;
+        margin-top: 40px;
+        margin-left: 5px;
+    }
+</style>
+<body>
+    <div class="aui-content">
+
+        <ul class="aui-list-view" id="list">
+          
+        </ul>
+      	 <ul class="aui-list-view">
+      	 	
+            <!-- <li class="aui-list-view-cell room-cell" tapmode onclick="openRoomDetail()">
+                <img src="http://images2015.cnblogs.com/news/66372/201601/66372-20160115153559913-1073291490.jpg"/>
+                <span>这是标题</span>
+            </li> -->
+            <li id="add" class="aui-list-view-cell aui-hide" tapmode onclick="addRoom()">
+            	 <a class="aui-iconfont aui-icon-add1">添加房源</a>
+            </li>
+      	 </ul>
+    </div>
+    <div class="div-blank"></div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+        pullRefresh(getRoomList);
+        api.addEventListener({
+            name: 'publish_room_refresh'
+        }, function(ret, err){
+            pullRefresh(getRoomList);
+        });
+    }
+
+    function addRoom(){
+        openWindow(function(delay){
+
+            api.openWin({
+                    name: "new_room_win",
+                    url: "new_room_win.html",
+                    delay: delay
+                })     
+        })
+    }
+
+    function getRoomList(pageIndex){
+      // if (pageIndex > totalPage) {
+      //       return;
+      //   };
+      var params = new Object();
+      // var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      // params['pageCount'] = 10;
+      // params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.landlord_room_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        responseCallback(ret, err, function(){
+          if (!ret.repDatas) {
+            // if(1 == pageIndex){
+            //   $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有订单!</div>');
+            //   $api.addCls($api.byId('list'),'aui-hide');
+            // }
+            $api.removeCls($api.byId('add'), 'aui-hide');
+            return;
+          }else{
+            var listhtml = '';
+            // var more = $api.byId("more");
+            // if(more){
+            //   $api.remove(more);
+            // }
+            // var tipText = $api.byId('tip-text');
+            // if (tipText) {
+            //   $api.remove(tipText);
+            // };
+
+            // $api.removeCls($api.byId('list'),'aui-hide');
+            // totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+            if (ret.repDatas.length && ret.repDatas.length >= 10) {
+              $api.addCls($api.byId('add'), 'aui-hide');
+            }else{
+              $api.removeCls($api.byId('add'), 'aui-hide');
+            }
+            for(var i = 0; i < ret.repDatas.length; i++){
+              var item = ret.repDatas[i]; 
+
+              listhtml += '<li class="aui-list-view-cell room-cell" tapmode onclick="openRoomDetail(\''+ item.APPHOUSE_ID +'\',' + i +')"><img src="'+item.HOUSE_IMG +'"/><span>'+ item.TITLE+'</span></li>';
+            }
+            $api.html($api.byId('list'), listhtml);
+            // if(pageIndex == 1){
+            //   $api.html($api.byId('list'), listhtml);
+            // }else{
+            //  $api.append($api.byId('list'), listhtml);
+            // }
+            // page += 1;
+            // if (page > totalPage) {
+            //   return;
+            // };
+            // $api.after($api.byId('list'), '<p id="more" tapmode onclick="getComment('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/);
+      });
+    }
+
+    function openRoomDetail(houseId, index){
+        openWindow(function(delay){
+            api.openWin({
+              name: 'room_detail_win',
+              url: 'room_detail_win.html',
+              pageParam:{
+                houseId: houseId,
+                index: index,
+                fromFrame: 'publish_room_frm'
+              },
+              delay: delay
+            })     
+        })
+    }
+  
+    function deleteRoom(elIndex){
+      var flag = false;
+      var childEl = $api.first($api.byId('list'));
+      for(var i = 0; i < elIndex; i++){
+        childEl = childEl.nextSibling;
+        if ((i < elIndex - 1) &&  !$api.hasCls(childEl, 'aui-hide')) {
+          flag = true;
+        };
+      }
+      // $api.remove(childEl);
+      $api.addCls(childEl, 'aui-hide');
+      if (true == flag) {
+        $api.addCls($api.byId('add'), 'aui-hide');
+        return;
+      };
+      while(childEl = childEl.nextSibling){
+        if (!$api.hasCls(childEl, 'aui-hide')) {
+           flag = true;
+           break;
+        };
+      };
+      if (true == flag) {
+        $api.addCls($api.byId('add'), 'aui-hide');
+      }else{
+        $api.removeCls($api.byId('add'), 'aui-hide');
+      }
+    }
+</script>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no" />
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	.aui-content{
+		margin-top: 10px;
+
+	}
+	.aui-content *{
+		margin-top: 5px;
+
+	}
+	#name{
+		position: absolute;
+		left: 60px;
+		top: 20px;
+	}
+
+ /* #footer{
+    margin-top: 190px;
+  }*/
+</style>
+<body>
+    <div class="aui-content">
+      <!-- <div id="header" class="aui-padded-0-10">
+      	<div>
+      		<img class="image-avatar" src="http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100" />
+      		<span id="name">名字</span>
+      	</div>
+      	
+      	<div class="aui-text-justify"></div>
+      </div>
+      <div id="footer" class="aui-padded-0-10">
+      	<div><span style="font-size:22px;">订单总价：</span><span style="font-size:25px;color:#f66;">1500</span>&nbsp;元</div>
+      	<div>2012年12月12日入住－2012年12月12日离店 共3晚</div>
+      	<div>入住人数：5</div>
+      	<div>房间数量：4</div>
+      	<div>联系人&nbsp;&nbsp;：吴先生</div>
+      </div> -->
+
+      <!-- <div id="header" class="aui-padded-0-10">
+        <div>
+          <img id="user-avatar" class="image-avatar"/>
+          <span id="name"></span>
+        </div>
+        
+        <div id="order-note" class="aui-text-justify"></div>
+        <div><span style="font-size:22px;">订单总价：</span><span id="order-price-total" style="font-size:25px;color:#f66;"></span>&nbsp;元</div>
+        <div id="order-date"></div>
+        <div id="people-count"></div>
+        <div id="room-count"></div>
+        <div>联系人&nbsp;&nbsp;：<span id="contact"></span></div>
+      </div> -->
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    // var orderDetail;
+    var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+        var pageParam = api.pageParam;
+
+        pullRefresh(getOrderDetail);
+
+        // orderDetail = eval('(' + pageParam.orderDetail + ')');
+       
+        // $api.byId('user-avatar').src = orderDetail.fdHeadImg;
+        // $api.text($api.byId('name'), orderDetail.name);
+        // $api.html($api.byId('order-note'), orderDetail.des);
+        // $api.text($api.byId('order-price-total'), parseInt(orderDetail.peopleCount) * parseInt(orderDetail.homeCount) * parseInt(orderDetail.oneHomePrice) ) ;
+        // $api.html($api.byId('order-date'), orderDetail.dateInfo);
+        // $api.html($api.byId('people-count'), '入住人数：' +  orderDetail.peopleCount);
+        // $api.html($api.byId('room-count'), '房间数量：' +  orderDetail.homeCount);
+        // $api.text($api.byId('contact'), orderDetail.nickName);
+    }
+     function getOrderDetail(pageIndex){
+      if (pageIndex > totalPage) {
+    		return;
+    	};
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      params['orderId'] = pageParam.orderId;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.landlord_reception_detail,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        responseCallback(ret, err, function(){
+          if (!ret.repDatas || !ret.repDatas.length) {
+            toast('加载失败')
+          }else{
+            var orderDetail = ret.repDatas[0];
+            var userHeadImg = orderDetail.userHeadImg ? orderDetail.userHeadImg : '../image/user_default.png';
+            var dayCount = parseInt(orderDetail.dateInfo.substring(22, orderDetail.dateInfo.length -1));
+            var orderNote = '';
+            if (orderDetail.des) {
+              orderNote = '住宿要求&nbsp;&nbsp;：' + orderDetail.des;
+            };
+            var bodyhtml = ' <div class="aui-content"><div id="header" class="aui-padded-0-10"><div><img id="user-avatar" class="image-avatar" src="'+ userHeadImg +'"/><span id="name">'+orderDetail.nickName+'</span></div><div><span style="font-size:22px;">订单总价：</span><span id="order-price-total" style="font-size:25px;color:#f66;">'+(dayCount * parseInt(orderDetail.homeCount) * parseInt(orderDetail.oneHomePrice))+'</span>&nbsp;元</div><div id="order-date">'+ orderDetail.dateInfo+'</div><div id="people-count">入住人数：'+orderDetail.peopleCount+'</div><div id="room-count">房间数量：'+orderDetail.homeCount+'</div><div>联系人&nbsp;&nbsp;：<span id="contact">'+orderDetail.name+'</span></div><div id="order-note" class="aui-text-justify">'+ orderNote +'</div></div></div>'
+            $api.html($api.dom('body'), bodyhtml );
+          }
+
+        }/*, true*/);
+      });
+    }
+  
+        
+</script>
+</html>

@@ -1,0 +1,401 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>发布订单</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+    <style type="text/css">
+        header{
+            position: relative;
+        }
+        #new-msg-tip{
+            background-color: #dc1e2b;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #dc1e2b;
+            border-radius: 50%;
+            position: absolute;
+           /* margin-left: 20px;
+            margin-top: 10px;*/
+            left: 25px;
+            top: 8px;
+            z-index: 9;
+        }
+        
+        .aui-mask {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 11;
+        }
+    </style>
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+        <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="sliding()">
+            <span class="aui-iconfont aui-icon-my"></span>
+            <span id="new-msg-tip" class="aui-hide"></span>
+        </a>
+        <div class="aui-title">发布订单</div>
+        <!--<a class="aui-iconfont aui-icon-menu aui-pull-right"></a>-->
+    </header>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script>
+    var headerPos;
+    var unreadMsgNum = 0;
+    var db, dbName;
+    function sliding() {
+        api.openSlidPane({type: 'left'});
+    }
+    apiready = function () {
+	    api.parseTapmode();
+
+        // if("ios" == api.systemType){
+        //     var obj = api.require('privacy');
+        //     obj.location(function(ret){
+        //         if(!ret.status){
+        //             api.alert({
+        //                 title: '提示', 
+        //                 msg: "请在‘设置－隐私－定位服务’中开启定位功能"
+        //             });
+        //         }
+        //     });
+        // }
+        if("android" == api.systemType){
+            var ajpush = api.require('ajpush');
+            ajpush.init(function(ret) {
+                if (ret && ret.status){
+                    var ajpushParam = {alias: $api.getStorage('userNum') ,tags:[$api.getStorage('userNum')]};
+                    ajpush.bindAliasAndTags(ajpushParam,function(ret) {
+                            // var statusCode = ret.statusCode;
+                            getNewUsePushMsg();
+                    });
+                }else{
+                    // api.alert({
+                    //     title: '提示', 
+                    //     msg: '推送出错啦'
+                    // });
+                }
+            });
+        }
+        var ajpush = api.require('ajpush');
+        var ajpushParam = {alias: $api.getStorage('userNum') ,tags:[$api.getStorage('userNum')]};
+        ajpush.bindAliasAndTags(ajpushParam,function(ret) {
+                // var statusCode = ret.statusCode;
+                getNewUsePushMsg();
+        });
+        db = api.require('db');
+        dbName = 'likelife_' + $api.getStorage('userNum') + '_db';
+        // var ajpush = api.require('ajpush');
+        setTimeout(initDB, 300);
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        headerPos = $api.offset(header);
+        // var body_h = $api.offset($api.dom('body')).h;
+        exitApp();
+       
+        registerEvent('user_order_list');
+        registerEvent('publish_order');
+        registerEvent('message_center');
+        registerEvent('excellent_room');
+        registerEvent('verify');
+        registerEvent('help');
+        registerEvent('setting');
+        registerEvent('publish_room');
+        registerEvent('pay_method');
+        registerEvent('landlord_order_list');
+        registerEvent('reception_list');
+        registerEvent('landlord_specific_order_list');
+        var frmTitle = $api.getStorage('frameTitle');
+        var eventName = $api.getStorage('eventName');
+        if (frmTitle) {
+            switchPane({"value": {"frameTitle": frmTitle}}, eventName + '_frm', eventName + '_frm.html');
+        }else{
+            switchPane({"value": {"frameTitle":"发布订单"}}, 'publish_order_frm', 'publish_order_frm.html');
+        }
+        api.addEventListener({
+            name: 'badge_event'
+        }, function(ret, err){
+            updateMsgNum(ret.value.msgNum);
+        });
+
+
+        var date = $api.getStorage('date');
+        var today = new Date();
+        if (!date) {
+            shareText('以后再说');
+            $api.setStorage('date', new Date());
+        }else{
+            if('不再提示' == date){
+
+            }else if( Math.round((today - new Date(date))/86400000) > 15){
+                shareText('不再提示');
+                $api.setStorage('date', new Date());
+            }
+        }
+
+
+        api.addEventListener({//抢单，弹出房源列表
+            name: 'dialogEvent'
+        }, function(ret, err){
+            if(ret.value.type=="show"){
+                // slidBackEnabled
+                if(api.systemType=='ios'){
+                    api.setWinAttr({
+                        slidBackEnabled: false
+                    });
+                }
+                if(!$api.dom(".aui-mask")){
+                    $api.append($api.dom("body"),'<div class="aui-mask"></div>');
+                }
+            }else if(ret.value.type=="hidden"){
+                if(api.systemType=='ios'){
+                    api.setWinAttr({
+                        slidBackEnabled: true
+                    });
+                }
+                $api.remove($api.dom(".aui-mask"));
+            }
+        });
+	};
+
+
+    function switchPane(ret, frameName, frameUrl){
+        $api.html(document.getElementsByClassName("aui-title")[0], ret.value.frameTitle);
+        var reloadFlag = false;
+        if ('message_center_frm'  == frameName || 'landlord_order_list_frm' == frameName || 'reception_list_frm' == frameName || 'landlord_specific_order_list_frm' == frameName) {
+            reloadFlag = true;
+        };
+        api.openFrame({
+            name: frameName,
+            url: frameUrl,
+            bounces: true,
+            bgColor: '#f4f4f4',
+            reload: reloadFlag,
+            // pageParam:{
+            //       unreadMsgNum: unreadMsgNum,
+            //     },
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: headerPos.w,
+                h: 'auto'
+            }
+        });
+    }
+
+    function registerEvent(name){
+        api.addEventListener({
+            name: name
+        }, function(ret, err){
+            switchPane(ret, name + '_frm', name + '_frm.html');
+        });
+    }
+
+    function exitApp(){
+        api.addEventListener({
+                name: 'keyback'
+            }, function(ret, err){
+                api.toast({
+                    msg: '再按一次返回键退出'+api.appName,
+                    duration:2000,
+                    location: 'bottom'
+                });
+                    
+                api.addEventListener({
+                    name: 'keyback'
+                }, function(ret, err){
+                    api.closeWidget();
+                });
+                
+                setTimeout(function(){
+                        exitApp();
+                },3000)
+        });
+    }
+    function initDB(){
+        
+        db.openDatabase({
+            name: dbName
+        }, function(ret, err){
+            if(ret.status){//android设备
+                // api.alert({msg:'数据库打开成功'});
+                var sql = 'CREATE TABLE msg(id INTEGER PRIMARY KEY AUTOINCREMENT,readstate int, title varchar(255), content varchar(255))';
+                db.executeSql({
+                    name: dbName,
+                    sql: sql
+                }, function(ret, err){
+                    // if(ret.status){
+                    //     api.alert({msg:'创建表成功'});
+                    // } else{
+                    //     api.alert({msg:err.msg});
+                    // }
+                });
+
+                getUnreadCount(function(count){
+                    unreadMsgNum += count;
+                    updateMsgNum(count);
+                })
+            }
+            // else{
+            //     api.alert({msg:err.msg});
+            // }
+        });
+        //iOS设备
+        var sql = 'CREATE TABLE msg(id INTEGER PRIMARY KEY AUTOINCREMENT,readstate int, title varchar(255), content varchar(255))';
+        db.executeSql({
+            name: dbName,
+            sql: sql
+        }, function(ret, err){
+            // if(ret.status){
+            //     api.alert({msg:'创建表成功'});
+            // } else{
+            //     api.alert({msg:err.msg});
+            // }
+        });
+        
+        getUnreadCount(function(count){
+            unreadMsgNum += count;
+            updateMsgNum(count);
+        })
+        
+
+        // var deleteSql = 'DROP TABLE IF EXISTS msg';
+        // db.executeSql({
+        //     name: dbName,
+        //     sql: deleteSql
+        // }, function(ret, err){
+        // });
+        // insertMsg('title1', 'content1');
+        // insertMsg('title2', 'content2');
+        addJpushListener();
+
+    }
+
+    function updateMsgNum(num){
+        // api.alert({
+        //     title: 'title', 
+        //     msg: 'updateMsgNum:' + num
+        // });
+        if (num && num > 0) {
+            $api.removeCls($api.byId('new-msg-tip'), 'aui-hide');
+        }else{
+            num = 0;
+            $api.addCls($api.byId('new-msg-tip'), 'aui-hide');
+        }
+        
+        api.sendEvent({
+            name: 'msg_event',
+            extra: {msgNum: num}
+        });
+        var ajpush = api.require('ajpush');
+        ajpush.setBadge({
+            badge:num
+        });
+    }
+
+    function addJpushListener(){
+        var ajpush = api.require('ajpush');
+        ajpush.setListener(//ios, app在前台
+            function(ret) {
+                
+                
+                insertMsg(ret.title, ret.content);
+            }
+        );
+        api.addEventListener({name:'appintent'}, function(ret,err) {//
+            if(ret && ret.appParam.ajpush){
+
+                var ajpushRet = ret.appParam.ajpush;
+                // var id = ajpush.id;
+                // var title = ajpush.title;
+                // var content = ajpush.content;
+                // var extra = ajpush.extra;
+                insertMsg(ajpushRet.title, ajpushRet.content);
+                switchPane({"value": {"frameTitle":"消息中心"}}, 'message_center_frm', 'message_center_frm.html');
+                api.sendEvent({
+                    name: 'fixed_pane_div_style',
+                    extra: {name: 'message_center'}
+                });
+            }
+        })
+        api.addEventListener({name:'noticeclicked'}, function(ret,err) {//ios, 未启动app
+            if(ret && ret.value){
+
+                var ajpushRet = ret.value;
+                // var content = ajpush.content;
+                // var extra = ajpush.extra;
+                insertMsg(ajpushRet.title, ajpushRet.content);
+                switchPane({"value": {"frameTitle":"消息中心"}}, 'message_center_frm', 'message_center_frm.html');
+                api.sendEvent({
+                    name: 'fixed_pane_div_style',
+                    extra: {name: 'message_center'}
+                });
+            }
+        })
+    }
+
+    function insertMsg(title, content){
+        unreadMsgNum++;
+        updateMsgNum(unreadMsgNum);
+        
+
+        api.sendEvent({
+            name: 'message_center_refresh',
+        });
+    }
+
+    function getUnreadCount(callback){
+         var params = new Object();
+          params['userNum'] = $api.getStorage('userNum');
+          params['pageCount'] = 1;
+          params['pageIndex'] = 1;
+          params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+            url:UrlProvider.message_list,
+            method: 'post',
+            headers:{"content-type": "application/x-www-form-urlencoded"},
+            data:{body:
+              "reqData=" + encodeURIComponent(JSON.stringify(params))
+          }   
+        },function(ret,err){
+           if (ret) {
+                callback(ret.unReadCount);
+           }
+        });
+    }
+
+    
+
+    function getNewUsePushMsg(){
+        if (api.pageParam.userFlag > 0) {
+            var params = new Object();
+            params['userNum'] = $api.getStorage('userNum');
+            params['FKEY'] = DES3.APPKEY();
+            api.ajax({
+                url:UrlProvider.get_push_msg,
+                method: 'post',
+                headers:{"content-type": "application/x-www-form-urlencoded"},
+                data:{body:
+                  "reqData=" + encodeURIComponent(JSON.stringify(params))
+              }   
+            },function(ret,err){
+               // api.alert({
+               //     title: 'get_push_msg', 
+               //     msg: 'ret:' + JSON.stringify(ret)
+               // });
+            });
+        }
+    }
+
+</script>
+</body>
+</html>

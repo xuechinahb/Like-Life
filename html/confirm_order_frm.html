@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    /*li{
+        margin: 0px 10px;
+    }*/
+    li span{
+        margin-left: 10px;
+    }
+    li:last-child{
+        color: #f66;
+    }
+
+    .aui-input-addon{
+        margin-left: 10px;
+    }
+
+</style>
+<body>
+    <div class="aui-content">
+       <ul class="aui-list-view">
+            <li class="aui-list-view-cell">
+                <span id="date"></span>
+            </li>
+            <li class="aui-list-view-cell">
+                <span>入住人数：&nbsp;&nbsp;&nbsp;</span><span id="people-count"></span>
+            </li>
+            <li class="aui-list-view-cell">
+                <span>房间数量：&nbsp;&nbsp;&nbsp;</span><span id="room-count"></span>
+            </li>
+              <li class="aui-list-view-cell">
+                <span>单间房价：&nbsp;&nbsp;&nbsp;</span><span id="room-price"></span>
+            </li>
+              <li class="aui-list-view-cell">
+                <span>订单总额：&nbsp;&nbsp;&nbsp;</span><span id="price-total"></span>
+            </li>
+        </ul>
+
+         
+        </div>
+         <!-- <div class="aui-content-padded"> -->
+
+        <div class="aui-form aui-card">
+            <div class="aui-input-row">
+                <i class="aui-input-addon  aui-iconfont aui-icon-people"></i>
+                <span class="aui-input-addon">联系人&nbsp;&nbsp;</span>
+                <input type="text" class="aui-input" placeholder="入住人姓名" id="username"/>
+            </div>
+             <div class="aui-input-row">
+                <i class="aui-input-addon  aui-iconfont aui-icon-mobile"></i>
+                <span class="aui-input-addon">手机&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <input type="tel" class="aui-input" placeholder="入住人手机号码" maxlength="11" id="phone" />
+            </div>
+        </div>
+        <div class="aui-content-padded">
+        <div class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="submit()">提交订单</div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+
+<script type="text/javascript">
+    apiready = function(){
+    
+    	
+        api.parseTapmode();
+        var pageParam = api.pageParam;
+        
+        alert('pageParam.city=' +  JSON.stringify(pageParam));
+        $api.text($api.byId('date'), pageParam.dateText);
+        $api.text($api.byId('people-count'), pageParam.peopleCount);
+        $api.text($api.byId('room-count'), pageParam.roomCount);
+        $api.text($api.byId('room-price'), pageParam.roomPrice);
+        $api.text($api.byId('price-total'), (pageParam.roomCount * pageParam.roomPrice  * pageParam.dayCount));
+    }
+    function submit(){
+        var username    = $api.val($api.byId('username'));
+        var phone         = $api.val($api.byId('phone'));
+        if (!username.length) {
+            toast('请填写入住人姓名');
+            return;
+        };
+        if (!phone.length) {
+            toast('请填写入住人手机号码');
+            return;
+        };
+        if (!verifyTel(phone)) {
+            toast('手机号码无效');
+            return;
+        };
+        
+
+        submitOrder();
+    }   
+    function verifyTel(str){
+        var reg = /^1[3578]\d{9}$/;
+        return reg.test(str);
+    }    
+
+    //生成订单
+    function submitOrder(){
+       // $api.byId('submit').disabled = true;
+      showLoading();
+      var pageParam = api.pageParam;
+       var checkInDate = new Date(pageParam.checkInDate); 
+      var checkOutDate = new Date(pageParam.checkOutDate);
+      // var dateInfo = checkInDate.getFullYear() + '-' + (checkInDate.getMonth() + 1 )+ '-' + checkInDateArg.getDate()+
+      var day = (checkOutDate - checkInDate)/86400000;
+      var dateInfo =checkInDate.getFullYear()+ '-' +  ("0"+(checkInDate.getMonth()+1)).slice(-2) + "-" +
+    ("0" + checkInDate.getDate()).slice(-2) + '/' + checkOutDate.getFullYear()+ '-' +  ("0"+(checkOutDate.getMonth()+1)).slice(-2) + "-" + ("0" + checkOutDate.getDate()).slice(-2)  + '共' +day +  '晚';
+      var params = new Object();//请求参数
+      
+      api.ajax({
+               url:reqUrl,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          
+          responseCallback(ret, err, function(){
+            
+            // pageParam.username = username;
+            // pageParam.phone = phone;
+            pageParam.orderId = ret.repDatas[0].orderId;
+            openWindow(function(delay){
+              api.openWin({
+                name: "room_list_win",
+                url: "room_list_win.html",
+                slidBackEnabled: false,
+                pageParam:pageParam,
+                delay: delay
+              })     
+            })
+          }/*, true*/);
+        });
+    }
+
+</script>
+</html>

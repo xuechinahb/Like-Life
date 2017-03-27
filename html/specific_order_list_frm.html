@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no" />
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	
+	.aui-list-view-cell{
+    position: relative;
+    padding: 12px 20px;
+	}
+  .aui-list-view-cell *{
+    margin-top: 5px;
+  }
+  .aui-btn-app{
+    margin-top: 15px;
+  }
+  #name{
+    position: absolute;
+    left: 70px;
+    top: 20px;
+  }
+
+  .disable-btn{
+    background-color: #dcdcdc;
+    color: white;
+    border: 1px solid #fff;
+  }
+</style>
+<body>
+    <div class="aui-content">
+      <ul class="aui-list-view" id="list">
+  		<!-- 	<li class="aui-list-view-cell">
+          <img class="image-avatar" src="http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100" />
+          <span id="name">名字</span>
+          <div class="aui-text-justify">小米内部人士透露，早在几个月前，小米已经将 2015 年销售目标调低到 7000 万台。小米销量未达预期，随即再次引发外界对其估值过高的质疑。上一轮讨论追溯至今年 7 月，当时业界疯传小米最新估值达 800 亿美元，超过三巨头中的百度，尽管事后小米否认，但始终无法打消外界对其估值泡沫的疑虑。</div>
+          <div><span style="font-size:22px;">订单总价：</span><span style="font-size:25px;color:#f66;">1500</span>&nbsp;元</div>
+          <div>2012年12月12日入住－2012年12月12日离店 共3晚</div>
+          <div>入住人数：5</div>
+          <div>房间数量：4</div>
+          <div>联系人&nbsp;&nbsp;：吴先生</div>
+           <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit(this)">快速抢单</div>
+  			</li> -->
+
+       <!--  <li class="aui-list-view-cell">
+          <img class="image-avatar" src="" />
+          <span id="name"></span>
+          <div class="aui-text-justify"></div>
+          <div><span style="font-size:22px;">订单总价：</span><span style="font-size:25px;color:#f66;"></span>&nbsp;元</div>
+          <div></div>
+          <div>入住人数：</div>
+          <div>房间数量：</div>
+          <div>联系人&nbsp;&nbsp;：</div>
+           <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit()">快速抢单</div>
+        </li> -->
+		</ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+       // alert('hhhh=' + $api.offset($api.byId('test')).h); 157
+        pullRefresh(getOrderList, true);
+        // $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有入住订单!</div>');
+        // openRoomListPickerFrm();
+    }
+        
+    function getOrderList(pageIndex){
+      if (pageIndex > totalPage) {
+    		return;
+    	};
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      params['pageCount'] = 10;
+      params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.landlord_specific_order_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        var more = $api.byId("more");
+        if(more){
+          $api.remove(more);
+        }
+        var tipText = $api.byId('tip-text');
+        if (tipText) {
+            $api.remove(tipText);
+        };
+        responseCallback(ret, err, function(){
+          // api.alert({
+          //     title: 'title', 
+          //     msg: 'ret:' + JSON.stringify(ret)
+          // });
+          if (!ret.repDatas || ret.repDatas.length < 2) {
+            if(1 == pageIndex){
+              $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">暂时没有新订单!</div>');
+              $api.addCls($api.byId('list'),'aui-hide');
+            }
+            return;
+          }else{
+            var listhtml = '';
+            // var more = $api.byId("more");
+            // if(more){
+            //   $api.remove(more);
+            // }
+            // var tipText = $api.byId('tip-text');
+            // if (tipText) {
+            //   $api.remove(tipText);
+            // };
+
+            $api.removeCls($api.byId('list'),'aui-hide');
+            totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+            for(var i = 0; i < ret.repDatas.length - 1; i++){
+              var item = ret.repDatas[i]; 
+               
+              // var dayCount = parseInt(item.dateInfo.substring(22, item.dateInfo.length -1));
+              // var roomPrice = Math.round(item.totalPrice/ dayCount / item.homeCount);
+              // if (item.state == '预定成功') {
+              //   // listhtml += '<li class="aui-list-view-cell" onclick="openWin(\'' + item.orderID + '\', \'user_order_detail\')">';
+              //   var jsonStr = JSON.stringify(item);
+              //   var jsonStr = jsonStr.replace(/\"/g, '\\\'');
+
+              //   listhtml += '<li class="aui-list-view-cell" onclick="openOrderDetail(\'' + jsonStr + '\')">';
+              // }else{
+              //   var elIndex = (pageIndex - 1) * 5 + i;
+              //   listhtml += '<li class="aui-list-view-cell" onclick="openNewComment(\'' + item.orderID + '\',' + elIndex + ')">';
+              // }
+              var buttonStyle = '';
+              if('已接受' == item.orderState){
+                buttonStyle = 'disable-btn';
+              }
+              
+              var userHeadImg = item.userHeadImg ? item.userHeadImg : '../image/user_default.png';
+              listhtml += '<li class="aui-list-view-cell"><img class="image-avatar" src="' + userHeadImg+'" /><span id="name">'+ item.nickName+'</span><div><span style="font-size:22px;">订单总价：</span><span style="font-size:25px;color:#f66;">'+ item.totalPrice+ '</span>&nbsp;元</div>'+ item.dateInfo /*item.dateInfo.substring(0, item.dateInfo.indexOf('/'))*/+'<div></div><div>入住人数：'+ item.peopleCount+'</div><div>房间数量：'+ item.homeCount+'</div><div>单间房价：'+ item.oneHomePrice +'</div><div>联系人&nbsp;&nbsp;：'+ item.name+'</div><div class="aui-text-justify">住宿要求&nbsp;&nbsp;：'+ item.des+'</div><div class="aui-btn aui-btn-block-app aui-btn-app '+ buttonStyle +'" tapmode onclick="submit(this, \''+ item.orderId +'\')">快速抢单</div></li>';
+    					// alert('y=' + (157 * ((page - 1) * 5 + i + 1)));
+    					// onclick="callPhone(\'' +item.phoneNum +'\')"
+    					// setTimeout('openMap(\'' + item + '\',' + i + ')', 100 * i);
+				    }
+            setTimeout("api.parseTapmode()", 100);  // 等0.1秒在执行
+				    if(pageIndex == 1){
+              $api.html($api.byId('list'), listhtml);
+            }else{
+             $api.append($api.byId('list'), listhtml);
+            }
+            page += 1;
+            if (page > totalPage) {
+              return;
+            };
+            $api.after($api.byId('list'), '<p id="more" tapmode onclick="getOrderList('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/, function(){
+          // if(ret.resCode == "00"){
+          //   $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">请先发布房源并通过审核才能看到订单并开始抢单!</div>');
+          //     $api.addCls($api.byId('list'),'aui-hide');
+
+          // }
+        });
+      });
+    }
+
+    function submit(el, orderId){
+      if ($api.hasCls(el, 'disable-btn')) {
+            toast('您已接单，等待房客付款');
+            return;
+          };
+    
+      confirmDialog('确定接单?', function(){
+        submitRequest(el, orderId);
+      })
+    }
+
+   
+    function submitRequest(el,orderId){
+      showLoading();
+      
+      var params = new Object();
+      var pageParam = api.pageParam;
+        params['userID'] = $api.getStorage('userId');
+      params['orderID'] = orderId;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.landlord_specific_order_receive,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        responseCallback(ret, err, function(){
+          toast('接单成功，等待房客付款');
+          if ($api.hasCls(el, 'aui-btn-app')) {
+            $api.removeCls(el, 'aui-btn-app');
+            $api.addCls(el, 'disable-btn');
+          };
+          
+        }/*, true*/);
+      });
+    }
+    //  function openOrderDetail(orderDetail){
+      
+    //   openWindow(function(delay){
+
+    //     api.openWin({
+    //       name: 'tenant_order_detail_win',
+    //       url: 'tenant_order_detail_win.html',
+    //       pageParam:{
+    //         orderDetail: orderDetail
+    //       },
+    //       delay: delay
+    //     })     
+    //   })
+    // }
+
+
+    
+</script>
+</html>

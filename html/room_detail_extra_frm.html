@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	.aui-btn{
+		border-radius: 0px;
+		height: 45px;
+        padding-top: 10px;
+        /*text-align: center !important;*/
+	}
+
+</style>
+<body>
+    <!-- <div class="aui-content">
+      
+    </div> -->
+    <div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="submit()" id="submit">预定</div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+    }
+
+    function submit(){
+        var pageParam = api.pageParam;
+        if ('excellent_room_frm' == pageParam.fromFrame) {
+            openWindow(function(delay){
+                  api.openWin({
+                    name: "publish_order_win",
+                    url: "publish_order_win.html",
+                    pageParam:api.pageParam,
+                    delay: delay
+                  })     
+             })
+        }else if('room_list_frm' == pageParam.fromFrame){
+            // openWindow(function(delay){
+
+            //   api.openWin({
+            //     name: "pay_win",
+            //     url: "pay_win.html",
+            //     pageParam:pageParam,
+            //     delay: delay
+            //   })     
+            // });
+            checkOrderState();
+        }
+    	
+    }
+    function checkOrderState(){
+        showLoading();
+        var params = new Object();
+        params['orderId'] = api.pageParam.orderId;  
+        params['FKEY'] = DES3.APPKEY();
+
+        var reqUrl = UrlProvider.check_order_state;
+        // if ('excellent_room_frm' == api.pageParam.fromFrame) {
+        //     reqUrl = UrlProvider.check_specific_order_state;
+        // }
+        api.ajax({
+               url:reqUrl,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+            api.hideProgress();
+           // api.alert({
+           //     title: 'title', 
+           //     msg: 'reqUrl:' + reqUrl + ',ret:' + JSON.stringify(ret)
+           // });
+           // return;
+          responseCallback(ret, err, function(){
+            openWindow(function(delay){
+
+              api.openWin({
+                name: "pay_win",
+                url: "pay_win.html",
+                pageParam:api.pageParam,
+                delay: delay
+              })     
+            });
+
+          });
+      });
+    }   
+</script>
+</html>

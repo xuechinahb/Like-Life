@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    .aui-content-padded{
+        margin-top: 15px;
+    }
+
+</style>
+<body>
+    <div  class="aui-content-padded">
+       <div id="content" class="aui-text-justify"></div>
+       <div class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="deleteMSg(msgDetail.msgID)">删除</div>
+    </div>
+   
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    var msgDetail;
+    apiready = function(){
+        api.parseTapmode();
+        msgDetail = eval('(' + api.pageParam.msgDetail + ')');
+        $api.html($api.byId('content'), msgDetail.content);
+    }
+    function deleteMSg(msgId){
+       
+        showLoading();
+        var params = new Object();
+        // params['userNum'] = $api.getStorage('userNum');
+        params['msgId'] = msgId;
+        params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+            url:UrlProvider.delete_message,
+            method: 'post',
+            headers:{"content-type": "application/x-www-form-urlencoded"},
+            data:{body:
+              "reqData=" + encodeURIComponent(JSON.stringify(params))
+          }   
+        },function(ret,err){
+            api.hideProgress();
+            // api.alert({
+            //     title: 'title', 
+            //     msg: 'msg_content:' + JSON.stringify(ret)
+            // });
+            api.closeWin();
+            api.execScript({
+                name: 'slide',
+                frameName: 'message_center_frm',
+                script: 'rmMsg(' + api.pageParam.elIndex + ');'
+            });
+        });
+    }    
+</script>
+</html>

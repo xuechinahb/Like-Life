@@ -1,0 +1,179 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+.aui-content-padded {
+    margin-top: 15px;
+}
+
+
+</style>
+<body>
+   <!-- <div class="aui-tab">
+        <ul class="aui-tab-nav" id="tab">
+            <li class="active">全部</li>
+            <li>地铁</li>
+            <li>公交</li>
+        </ul>
+    </div> -->
+    <div class="aui-content">
+        <ul class="aui-list-view" id="list">
+        </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript">
+    var city, keyword;
+    var pageIndex = 0;
+    apiready = function(){
+        api.parseTapmode();
+
+        // api.addEventListener({
+        //     name: 'keyback'
+        // }, function(ret, err){
+        //     api.execScript({
+        //         name: pageParam.fromWin,
+        //         frameName: pageParam.fromFrm,
+        //         script: 'mapLocation(false);'
+        //     });
+        // });
+        // var tab = $api.domAll("#tab li");
+        // for(var i in tab){
+        //     $api.addEvt(tab[i], 'click', function(){
+        //         $api.removeCls($api.dom("#tab li.active"),'active');
+        //         $api.addCls(this,'active');
+        //     });
+        // }
+        var pageParam = api.pageParam;
+        city = pageParam.city;
+        keyword = pageParam.keyword;
+        search(city, keyword, 0);
+        // api.addEventListener({
+        //         name:'scrolltobottom',
+        //         extra:{
+        //             threshold:0            //设置距离底部多少距离时触发，默认值为0，数字类型
+        //         }
+        //     },function(ret,err){
+        //         search(curCity, curKeyword, curPageIndex);
+        //     });
+    }
+    function search(cityArg, keywordArg, pageIndexArg){
+        if (!city && !keyword) {
+            // toast('定位失败');
+            api.alert({
+                    title: '提示',
+                    msg: '定位失败',
+                    buttons:['确定']
+                },function(ret,err){
+                    if(ret.buttonIndex == 1){
+                        api.closeWin();
+                    }
+                });
+            return;
+        };
+        if (arguments.length) {
+            city = cityArg;
+            keyword = keywordArg;
+            pageIndex = pageIndexArg;
+        };
+        
+        var listhtml = '';
+        var map = api.require('bMap');
+        map.searchInCity({
+            city: city,
+            keyword: keyword,
+            pageIndex: pageIndex,
+            pageCapacity: 20
+        },function(ret,err){
+            if(ret.status){
+             // alert(JSON.stringify(ret)); 
+             var more = $api.byId("more");
+             if(more){
+                $api.remove(more);
+            }
+            if (!ret.totalNum) {
+                api.removeEventListener({
+                    name: 'scrolltobottom'
+                });
+                $api.after($api.byId('list'), '<p id="more">暂无数据</p>');
+                return;
+            };
+
+            var results = ret.results;
+            // api.alert({
+            //     title: 'title', 
+            //     msg: 'results:' + JSON.stringify(ret)
+            // });
+            for (i in results) {
+                if (i == 0) {
+                    api.execScript({
+                        name: 'userlocation_win',
+                        script: 'setMapCenter(' + results[i].lon + ',' + results[i].lat + ');'
+                    });
+                };
+
+                var itemAddress = results[i].address;
+                listhtml += '<li class="aui-user-view-cell" tapmode onclick="pickAddress(\'' +results[i].name + '\',' + results[i].lon +',' + results[i].lat + ',\'' +  keyword+ '\',\''+ (itemAddress ? itemAddress : results[i].name) +'\')"';
+
+                listhtml += '<div class="aui-content-padded">';
+                listhtml += '<h4 class="aui-text-app">'+ results[i].name +'</h4>';
+                if (itemAddress) {
+                    listhtml += '<h5 class="aui-text-default">';
+                    listhtml += results[i].address +'</h5>';
+                }
+                
+                listhtml += '</div>';
+                listhtml += '</li>';
+            }
+            if(pageIndex == 0){
+                $api.html($api.byId('list'), listhtml);
+            }else{
+                $api.append($api.byId('list'), listhtml);
+            }
+            // $api.after($api.byId('list'), '<p id="more" tapmode onclick="search(\''+ city + '\',\'' + keyword + '\',' +pageIndex+')">点击加载更多</p>');
+            if (results.length == 20) {
+                $api.after($api.byId('list'), '<p id="more" tapmode onclick="search()">点击加载更多</p>');
+            };
+             
+            api.parseTapmode();
+            pageIndex++;
+        }else{
+            // alert(JSON.stringify(err));
+        }
+    });
+}
+    function pickAddress(address, lon, lat, keyword, addressDetail){
+        api.closeWin();
+        var pageParam = api.pageParam;
+       
+        api.execScript({
+            name: pageParam.fromWin,
+            frameName: pageParam.fromFrm,
+            script: 'updateLocation(\''+ address+ '\',' + lon + ',' + lat + ',\'' + city + '\',\'' + keyword+ '\',\''+ addressDetail +'\');'
+        });
+        // api.execScript({
+        //     name: 'slide',
+        //     frameName: 'publish_order_frm',
+        //     script: 'updateLocation(\''+ address+ '\',' + lon + ',' + lat + ',\'' + keyword +'\');'
+        // });
+     // api.closeWin();
+     // api.closeFrame({
+     //        name: 'poi_list_frm'
+     //    });
+     // api.closeWin({
+     //    name: 'userlocation_win',
+        // animation: {
+        //     type: 'flip',
+        //     subType: 'from_bottom',
+        //     duration: 500
+        // }
+    // });
+
+    }
+</script>
+</html>

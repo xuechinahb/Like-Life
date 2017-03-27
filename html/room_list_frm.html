@@ -1,0 +1,383 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    /*.root-title{
+        font-weight: bold;
+        font-size: 18px;
+    }*/
+    li{
+        position: relative;
+    }
+    li .aui-btn-app{
+        position: absolute;
+        top: 30%;
+        right: 10px;
+        width: 80px;
+
+    }
+    #countdowntext{
+        color: #f66;
+    }
+</style>
+<body>
+    <!-- <div>hahah</div> -->
+    <div class="aui-content">
+      <ul class="aui-user-view" id="list">
+            <!-- <li class="aui-user-view-cell aui-img">
+                <img class="aui-img-object aui-pull-left" src="http://static.oschina.net/uploads/user/523/1047279_50.jpg?t=1418696812000" width="50px" height="50px">
+                <div class="aui-img-body">
+                    <h1 class="room-title">这是标题</h1>
+                    <p>
+                    <a class="aui-iconfont aui-icon-favorfill"></a>
+                    <a class="aui-iconfont aui-icon-favorfill"></a>
+                    <a class="aui-iconfont aui-icon-favorfill"></a>
+                    <a class="aui-iconfont aui-icon-favorfill"></a>
+                    <a class="aui-iconfont aui-icon-favorfill"></a>
+                    </p>
+                    <a class="aui-iconfont aui-icon-locationfill"></a>
+                    <span>&nbsp;&nbsp;0.3公里</span>
+                    
+                </div>
+                <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="pay('3f038484362c4c12aeadadc2d4db8f19')">入住</div>
+            </li>
+ -->
+        </ul>
+        <!-- <div class="aui-content-padded">暂时没有找到合适的房源，请稍后再试。您也可以选择退款。</div> -->
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    var page = 1;
+    var intervalId;
+
+    var countDownTime;
+    var countDownIntervalId;
+    apiready = function(){
+        api.parseTapmode();
+        
+        // setTimeout("closePayWin()", 300);
+        setTimeout("closeConfirmWin()", 300);
+        if ('excellent_room_frm' == api.pageParam.fromFrame) {
+            pullRefresh(getSpecificRoomRet);
+        }else{
+            pullRefresh(getRoomList);
+        }
+        registerCancelOrderEvent();
+        // intervalId = setInterval("api.refreshHeaderLoading()",10000);
+        // setInterval('refresh()', 10000);
+    }
+    
+    function refresh(){
+        api.refreshHeaderLoading();
+
+    }
+    function closePayWin(){
+        api.closeWin({
+        name: 'pay_win',
+      });
+        setTimeout("closeConfirmWin()", 300);
+    }
+    function closeConfirmWin(){
+         api.closeWin({
+        name: 'confirm_order_win',
+      });
+    }
+
+    function getRoomList(){
+         if (countDownIntervalId) {
+            clearInterval(countDownIntervalId);
+        };
+        var pageParam = api.pageParam;
+        // if (flag) {
+            // showLoading("正在通知酒店...");
+        // };
+        var listhtml = '';
+        
+        var params = new Object();
+        params['pageCount'] = 10;
+        params['pageIndex'] = 1;
+        params['orderID'] = pageParam.orderId;  
+        params['userID'] = $api.getStorage('userId');
+        params['FKEY'] = DES3.APPKEY();
+
+        api.ajax({
+               url:UrlProvider.room_list,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          api.refreshHeaderLoadDone();
+           // api.alert({
+           //     title: 'title', 
+           //     msg: 'ret:' + JSON.stringify(ret)
+           // });
+          responseCallback(ret, err, function(){
+           
+            if (!ret.repDatas || ret.repDatas.length < 2) {
+                // listhtml = '<div class="aui-content-padded">暂时没有找到合适的房源，请稍后再试。您也可以选择退款。</div>'
+                listhtml = '<li class="aui-list-view-cell aui-text-center">正在为您派单，请等待<span id="countdowntext">00:10<span></li>'
+                $api.html($api.byId('list'), listhtml);
+                countDownTime = 9;
+                countDownIntervalId = setInterval("CountDown()", 1000);
+            }else{
+                listhtml += '<li class="aui-list-view-cell aui-text-center">已通知'+ (ret.repDatas.length - 1) +'位房东。<span id="countdowntext">00:10<span></li>'
+                countDownTime = 9;
+                countDownIntervalId = setInterval("CountDown()", 1000);
+                for(var i = 0; i < ret.repDatas.length - 1; i++){
+                    var item = ret.repDatas[i];
+                    var portrait = '../image/user_default.png';
+                    if (item.headImg && item.headImg.length > 0) {
+                        portrait = item.headImg;
+                    };
+                    var distance = '小于100米';
+                    if (item.distance > 0) {
+                        if (item.distance > 100) {
+                            distance = '大于100公里';
+                        }else{
+                            distance = item.distance + '公里';
+                        }   
+                    }
+
+                    var starLevelStr = '';
+                    var starLevel = item.review;
+                    // starLevelStr = '<div id="star-level" class="aui-text-center">';
+                    for(var j = 0; j < starLevel; j++){
+                        starLevelStr += '<a class="aui-iconfont aui-icon-favorfill"></a>';
+                    }
+                    for(var j = 5; j > starLevel; j--){
+                        starLevelStr += '<a class="aui-iconfont aui-icon-favor"></a>';
+                    }
+                    // starLevelStr += '</div>'
+
+                    listhtml += '<li class="aui-user-view-cell aui-img" onclick="roomDetail(\''+ item.houseID+ '\')"><img class="aui-img-object aui-pull-left" src="' + portrait + '"><div class="aui-img-body"><h1>' + item.houseTitle + '</h1><p>'+ starLevelStr +'</p><a class="aui-iconfont aui-icon-locationfill"></a><span>&nbsp;&nbsp;' + distance+ '</span></div><div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="checkOrderState(\''+ item.houseID+'\')">预订</div></li>';
+                    
+                }
+                $api.html($api.byId('list'), listhtml);
+                setTimeout("api.parseTapmode()", 100);  // 等0.1秒在执行
+            }
+           
+          }/*, true*/);
+        });
+    }
+    function getSpecificRoomRet(){
+         if (countDownIntervalId) {
+            clearInterval(countDownIntervalId);
+        };
+        var pageParam = api.pageParam;
+        // if (flag) {
+            // showLoading("正在通知酒店...");
+        // };
+        var listhtml = '';
+        
+        var params = new Object();
+        // params['pageCount'] = 10;
+        // params['pageIndex'] = 1;
+        params['orderId'] = pageParam.orderId;  
+        params['userID'] = $api.getStorage('userId');
+        params['FKEY'] = DES3.APPKEY();
+
+        api.ajax({
+               url:UrlProvider.specific_room_ret,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+          api.refreshHeaderLoadDone();
+           // api.alert({
+           //     title: 'title', 
+           //     msg: 'ret:' + JSON.stringify(ret)
+           // });
+           // return;
+          responseCallback(ret, err, function(){
+           
+            if (!ret.repDatas || !ret.repDatas.length) {
+                listhtml = '<li class="aui-list-view-cell aui-text-center">正在通知酒店接单，请等待<span id="countdowntext">00:10<span></li>'
+                $api.html($api.byId('list'), listhtml);
+                countDownTime = 9;
+                countDownIntervalId = setInterval("CountDown()", 1000);
+            }else{
+                // listhtml += '<li class="aui-list-view-cell aui-text-center">酒店已接单，请尽快付款。</li>'
+                clearInterval(intervalId);
+                $api.html($api.dom('body'), '<div class="aui-content-padded"><div class="div-blank"></div><div class="aui-text-center">酒店已接单，请尽快付款。</div><div class="div-blank"></div><div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="checkOrderState(\''+ api.pageParam.houseId+'\')">付款</div></div>')
+                setTimeout("api.parseTapmode()", 100);  // 等0.1秒在执行
+            }
+           
+          }/*, true*/);
+        });
+    }
+     function CountDown() {
+        if (countDownTime < 1) {
+            
+            clearInterval(countDownIntervalId);
+            api.refreshHeaderLoading();
+            return;
+        }
+        // $api.text($api.byId('countdowntext'), countDownTime + '秒后重新加载');
+        $api.text($api.byId('countdowntext'), '00:0' + countDownTime);
+        countDownTime--;
+    }  
+
+    function roomDetail(houseId){
+        if (intervalId) {
+            clearInterval(intervalId);
+        };
+        var pageParam = api.pageParam;
+        pageParam.houseId = houseId;
+        pageParam.fromFrame = 'room_list_frm';
+
+        openWindow(function(delay){
+
+              api.openWin({
+                name: "room_detail_win",
+                url: "room_detail_win.html",
+                // pageParam:{
+                //   houseId: houseId,
+                //   fromFrame: 'room_list_frm',
+                //   orderId: api.pageParam.orderId
+                // },
+                pageParam: pageParam,
+                delay: delay
+              })     
+            });
+
+        blank();
+
+    }
+
+    function checkOrderState(houseId){
+        showLoading();
+        var params = new Object();
+        params['orderId'] = api.pageParam.orderId;  
+        params['FKEY'] = DES3.APPKEY();
+
+        var reqUrl = UrlProvider.check_order_state;
+        if ('excellent_room_frm' == api.pageParam.fromFrame) {
+            reqUrl = UrlProvider.check_specific_order_state;
+        }
+        api.ajax({
+               url:reqUrl,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+            api.hideProgress();
+           // api.alert({
+           //     title: 'title', 
+           //     msg: 'reqUrl:' + reqUrl + ',ret:' + JSON.stringify(ret)
+           // });
+           // return;
+          responseCallback(ret, err, function(){
+            pay(houseId);
+            blank();
+          });
+      });
+    }
+
+    function pay(houseId){
+        var pageParam = api.pageParam;
+        pageParam.houseId = houseId;
+        openWindow(function(delay){
+
+              api.openWin({
+                name: "pay_win",
+                url: "pay_win.html",
+                pageParam:pageParam,
+                delay: delay
+              })     
+            });
+
+        // blank();
+    }
+
+
+    // function checkIn(houseId){
+    //     // api.confirm({
+    //     //     title: '提示',
+    //     //     msg: '确定入住?',
+    //     //     buttons:['确定', '取消']
+    //     // },function(ret,err){
+    //     //     if(ret.buttonIndex == 1){
+    //     //         checkInRequest(houseId);
+    //     //     }
+    //     // });
+    //     confirmDialog('确定入住?', function(){
+    //         checkInRequest(houseId);
+    //     })
+    //     var e = window.event;
+    //     if (e) {
+    //         e.preventDefault(); 
+    //     };
+    // }
+
+    //入住
+    // function checkInRequest(houseId){
+       
+
+    //     showLoading();
+    //     var pageParam = api.pageParam;
+        
+    //     var params = new Object();
+    //     params['houseID'] = houseId;
+    //     params['userID'] = $api.getStorage('userId');
+    //     params['FKEY'] = DES3.APPKEY();
+
+    //     api.ajax({
+    //            url:UrlProvider.checkin,
+    //            method: 'post',
+    //            headers:{"content-type": "application/x-www-form-urlencoded"},
+    //            data:{body:
+    //             "reqData=" + encodeURIComponent(JSON.stringify(params))
+    //         }   
+    //     },function(ret,err){
+          
+    //       responseCallback(ret, err, function(){
+    //             toast(ret.resInfo);
+                 
+    //             api.sendEvent({
+    //                 name: eventName,
+    //                 extra: {frameTitle: frameTitle}
+    //             });
+    //             $api.setStorage('eventName', 'user_order_list');
+    //             $api.setStorage('frameTitle', '准备入住');
+    //             api.closeWin();
+    //             }
+    //         );
+    //   });
+    // }
+
+
+    function registerCancelOrderEvent(){
+        api.addEventListener({
+            name: 'keyback'
+        }, function(ret, err){
+            api.execScript({
+                name: 'room_list_win',
+                script: 'cancelOrder();'
+            });
+        });
+        api.addEventListener({
+            name: 'swiperight'
+        }, function(ret, err){
+            api.execScript({
+                name: 'room_list_win',
+                script: 'cancelOrder();'
+            });
+        });
+    }
+</script>
+</html>

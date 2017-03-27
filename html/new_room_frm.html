@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	/*#div-cover-image{
+		height: 150px;
+		width: 100%;
+		position: relative;
+		background-color: #dcdcdc;
+		overflow:hidden;
+	}*/
+
+	#div-cover-text{
+		height: 120px;
+
+		text-align: center;
+		padding-top: 45px;
+		color: #f66;
+		/*display: none;*/
+		
+	}
+	/*#cover-image{
+		
+		width: 100%;
+		text-align: center;
+	
+
+	}*/
+
+	#del-cover-image{
+		position: absolute;
+		top: 0px;
+		right: 0px;
+		display: none;
+	}
+	/*.subtitle{
+        margin: 10px 0px 5px;
+        color: #f66;
+    }*/
+    input{
+    	margin-bottom: 0px !important;
+    }
+
+    ul li{
+        position: relative;
+        padding: 5px;
+    }
+    .aui-icon-roundclosefill{
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        /*z-index: 2;*/
+    }
+</style>
+<body>
+	<div id="div-cover-image" class="div-image-container">
+		<div id="div-cover-text" tapmode onclick="pickCoverImage(this)">
+			<div class="aui-iconfont aui-icon-cameraadd"></div>
+			<div>添加封面图片</div>
+		</div>
+		<img id="cover-image" class="image-fill"  tapmode onclick="coverBrowser()" />
+		<!-- <div id="cover-image" tapmode onclick="coverBrowser()"/> -->
+		<span id="del-cover-image" class="aui-iconfont aui-icon-roundclosefill" tapmode onclick="delCoverImage()"></span>
+	</div>
+	
+
+	<div class="aui-content-padded">
+		<div class="subtitle">上传图片</div>
+		<ul class="aui-list-view aui-grid-view" id="photoList">
+			<li id="addImgBtn" class="aui-list-view-cell aui-img aui-col-xs-4">
+				<img class="aui-img-object" src="../image/addImgBtn.png" tapmode onclick="selectImage(20)">
+			</li>
+		</ul>
+		<div class="subtitle">房型名称</div>
+		<input id="room-title" class="app-border" type="text" placeholder="请输入房型名称，15字以内"/>
+		<div class="subtitle">联系电话</div>
+		<input id="room-phone" class="app-border" type="tel" placeholder="请填写联系电话" maxlength="12"/>
+		<div class="subtitle">房源所在地</div>
+		<div class="aui-padded-10 app-border" onclick="openCityList('new_room_win', 'new_room_frm')">
+			<span id="city" class="aui-pull-left">厦门</span>
+			<span class="aui-iconfont aui-icon-right aui-pull-right"></span>
+		</div>
+		<div class="subtitle">房源地址</div>
+		<div class="aui-padded-10 app-border" onclick="mapSearch('new_room_win', 'new_room_frm')">
+			<span id="location" class="aui-pull-left"></span>
+			<span class="aui-iconfont aui-icon-right aui-pull-right"></span>
+		</div>
+		<div class="subtitle">房源介绍</div>
+		 <textarea id="room-remark" class="app-border" cols="50" rows="3" placeholder="介绍您的房源，突出房源特色与优势" ></textarea>
+        <div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="submit()" id="submit">下一步</div>
+        </div>
+        <div class="div-blank"></div>
+</body>
+	</div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/upload.js" ></script>
+<script type="text/javascript" src="../script/location.js" ></script>
+<script type="text/javascript">
+	var longitude =0 ,latitude = 0;
+    var city='', keyword='';
+    var coverImagePath = '';
+    apiready = function(){
+        api.parseTapmode();
+        mapLocation(false);
+
+    }
+    function coverBrowser(){
+    	imageBrowser(coverImagePath);
+    }
+    function pickCoverImage(){
+	    api.actionSheet({
+	        title: '请选择图片',
+	        cancelTitle: '取消',
+	        buttons: ['拍照','从相册选取']
+	    },function(ret,err){
+	        var winWidth = api.winWidth;
+	        var listHeight = winWidth/3;
+	        var sourceType = '';
+	        if(ret.buttonIndex==1){
+	        	sourceType = 'camera'
+	        }else if(ret.buttonIndex==2){
+	        	sourceType = 'library'
+	        }else{
+	        	return false;
+	        }
+	        
+            api.getPicture({
+                sourceType: sourceType,
+                encodingType: 'jpg',
+                mediaValue: 'pic',
+                destinationType: 'url',
+                allowEdit: false,
+                quality: 90,
+                saveToPhotoAlbum: false
+            }, function(ret, err){ 
+                if (ret && ret.data) {
+                	coverImagePath = ret.data;
+
+					$api.byId('div-cover-text').style.display = 'none';
+					$api.byId('cover-image').style.display = 'block';
+					$api.byId('cover-image').src = ret.data;
+					// $api.css($api.byId('cover-image'), 'background-image: url(' + ret.data + ')');
+					$api.byId('del-cover-image').style.display = 'inline';
+					api.parseTapmode();
+                }
+            });
+	    });
+    }
+    function delCoverImage(){
+    	$api.byId('div-cover-text').style.display = 'block';
+		$api.byId('cover-image').style.display = 'none';
+		$api.byId('del-cover-image').style.display = 'none';
+    }
+    function submit(){
+    	if (!coverImagePath) {
+    		toast('请上传封面图片');
+    		return false;
+    	};
+    	if (imagePathArray.length == 0) {
+    		toast('请上传图片');
+    		return false;
+    	};
+    	var roomTitle = $api.val($api.byId('room-title'));
+    	if (!roomTitle) {
+    		toast('请填写标题')
+            return false;
+    	}else if(roomTitle.length > 15){
+    		toast('标题不能多于15字');
+    		return false;
+    	}
+    	var roomPhone = $api.val($api.byId('room-phone'));
+    	if (!roomPhone) {
+    		toast('请填写联系电话')
+            return false;
+    	};
+    	var roomRemark = $api.val($api.byId('room-remark'));
+    	if (!roomRemark) {
+    		toast('请填写房源介绍')
+            return false;
+    	};
+    	var locationText = $api.text($api.byId('location'));
+    	if (!locationText) {
+    		toast('请填写房源地址')
+            return false;
+    	}
+    	var address= locationText;
+    	if (locationText.indexOf($api.text($api.byId('city'))) < 0) {
+    		address = $api.text($api.byId('city')) + locationText;
+    	};
+    	// if (true == selectCityFlag) {
+    		
+    	// }else{
+    	// 	if (locationText.indexOf(city) < 0) {
+	    // 		address = city + locationText;
+	    // 	};
+	    // 	if (address.indexOf(district.substring(0, district.length-1)) < 0) {
+	    // 		address = city +district + locationText;
+	    // 	};
+    	// }
+
+    	
+
+    openWindow(function(delay){
+		api.openWin({
+			name: "new_room_addition_win",
+			url: "new_room_addition_win.html",
+			pageParam:{
+				address: address,
+				phoneNum: roomPhone,
+				coverImagePath: coverImagePath,
+				roomImagePathArray: imagePathArray,
+				longitude: longitude,
+				latitude: latitude,
+				city: $api.text($api.byId('city')),
+				title: roomTitle,
+				roomRemark: roomRemark
+			},
+			delay: delay
+		})     
+	});
+    }
+</script>
+</html>

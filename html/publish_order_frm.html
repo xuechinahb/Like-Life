@@ -1,0 +1,362 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/common.css" />
+</head>
+<style type="text/css">
+
+.aui-list-view {
+    margin-bottom: 0px;
+}
+.aui-list-view-cell{
+    height: 55px;
+    color: #F66;
+}
+.aui-arrow-right, .aui-text-app{
+    line-height: 30px;
+    font-size: 18px;
+}
+.aui-counter-box{
+    margin-top: -5px;
+}
+.aui-counter{
+    width: 60%;
+}
+#city,#date,#location{
+    color: #737373;
+    font-size: 14px;
+    margin-left: 10px;
+    text-align: center;
+}
+#locatin-container{
+    width: 68%;
+    display: inline-block;
+    font-size: 18px;
+}
+#text-mylocation{
+    font-size: 18px;
+    /*font-family: sans-serif; */
+}
+/*#location{
+    color: dbdbdb;
+}*/
+/*#delete-voice{
+    margin-left: 10%;
+}
+#record{
+    display: inline-block;
+    margin-left: 15px;
+    width: 70%;
+}*/
+
+#submit{
+    margin-top: -10px;
+    margin-bottom: 0px;
+}
+
+/*#record_frame{
+    background-color: green;
+    width: 100%;
+    height: 75%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+}
+#record_animation{
+    position: absolute;
+    width: 45%;
+    top: 30%;
+    left: 0px;
+    right: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255,255,255,20);
+}
+.display-none{
+    display: none;
+}
+#other_requirement_text{
+    margin-bottom: 5px;
+}*/
+.date-class-1{
+    position: absolute;
+
+    top: -5px;
+    left: 50px;
+    font-size: 13px;
+}
+/*.date-class-2{
+     position: absolute;
+    left: 50px;
+     top: 0px;
+    font-size: 13px;
+}*/
+#room-price-tip{
+    font-size: smaller;
+    color: #f66;
+    padding-left: 15px;
+    background-color: white;
+    margin-bottom: 15px;
+    /*border-bottom: 1px solid #c8c7cc;*/
+}
+.safe-tip{
+    position: relative;
+    color: #f66;
+    top: -10px;
+    display: inline-block;
+    margin-left: 8px;
+}
+</style>
+<body>
+
+    <div class="aui-content">
+        <ul class="aui-list-view">
+            
+            <li class="aui-list-view-cell" id="first-cell" >
+               <!--  <a id="locatin-container" class="aui-arrow-right" tapmode onclick="openCityList('slide','publish_order_frm')">目的地<span id="city" style="display:none;">厦门</span><span id="location">厦门</span></a><span class="aui-iconfont aui-icon-locationfill" tapmode onclick="getMyLocation()">我的位置</span> -->
+               <!--  <a id="locatin-container" tapmode onclick="openCityList('slide','publish_order_frm')">目的地<span id="city" style="display:none;">厦门</span><span id="location">厦门</span></a><span class="aui-iconfont aui-icon-locationfill" tapmode onclick="getMyLocation()">我的位置</span> -->
+                <div id="locatin-container" tapmode onclick="openCityList('slide','publish_order_frm')"><span>目的地</span>&nbsp;<span id="city" style="display:none;">厦门</span><span id="location">厦门</span><span class="aui-iconfont aui-icon-right aui-pull-right"></span></div><span id="text-mylocation" class="aui-iconfont aui-icon-locationfill aui-pull-right" tapmode onclick="getMyLocation()"><span style="font-family: sans-serif;">我的位置</span></span>
+            </li>
+            <!-- <li class="aui-list-view-cell" tapmode onclick="openCityList()">
+                <a class="aui-arrow-right">目的地<span id="city">厦门</span></a>
+            </li> -->
+            <li class="aui-list-view-cell" tapmode onclick="openCalender()">
+                <a class="aui-arrow-right">日期<span id="date"></span></a>
+            </li>
+            <!--  <li class="aui-list-view-cell" tapmode onclick="openCalender()">
+                <a class="aui-arrow-right">日期<div class="date-class-1">入住</div><div class="date-class-2">离店</div></a>
+            </li> -->
+           <!--  <li class="aui-list-view-cell" tapmode onclick="mapSearch('slide', 'publish_order_frm')">
+                <a class="aui-arrow-right">位置<span id="location">酒店/关键字</span></a>
+            </li> -->
+            <li class="aui-list-view-cell aui-counter-list">
+                    <div class="aui-counter-box">
+                        <div class="aui-pull-left aui-text-app">入住人数</div>
+                        <div class="aui-counter aui-pull-right">
+                            <div class="aui-counter-minus aui-disabled" onclick="counterMinus('people-count', 3, 1,1)"></div>
+                            <input id="people-count" class="aui-counter-input" type="tel" value="1" min="1" maxlength="4">
+                            <div class="aui-counter-plus" onclick="counterPlus('people-count',1, 1)"></div>
+                        </div>
+                    </div>
+            </li>
+            <li class="aui-list-view-cell aui-counter-list">
+                    <div class="aui-counter-box">
+                        <div class="aui-pull-left aui-text-app">房间数量</div>
+                        <div class="aui-counter aui-pull-right">
+                            <div class="aui-counter-minus aui-disabled" onclick="counterMinus('room-count',3, 1, 1)"></div>
+                            <input id="room-count" class="aui-counter-input" type="tel" value="1" min="1" maxlength="4">
+                            <div class="aui-counter-plus" onclick="counterPlus('room-count', 1, 1)"></div>
+                        </div>
+                    </div>
+            </li>
+            <li class="aui-list-view-cell aui-counter-list">
+                    <div class="aui-counter-box">
+                        <div class="aui-pull-left aui-text-app">单间房价</div>
+                        <div class="aui-counter aui-pull-right">
+                            <div class="aui-counter-minus" onclick="counterMinus('room-price', 70, 50, 10)"></div>
+                            <input id="room-price" class="aui-counter-input" type="tel" value="100" min="10" maxlength="4">
+                            <div class="aui-counter-plus" onclick="counterPlus('room-price', 50, 10)"></div>
+                        </div>
+                    </div>
+            </li>
+        </ul>
+        <div id="room-price-tip">提示：输入您的出价，成交价以此为准。</div>
+        </div>
+       <!--  <div id="record_frame" class="display-none"></div>
+        <img src="../image/record_animation.gif" id="record_animation" class="display-none"> -->
+        <div class="aui-content-padded">
+    
+       <!--  <div class="text-secondary" id="other_requirement_text">还有其他要求？那就说点什么吧...</div>
+        <span class="aui-iconfont aui-icon-delete" id="delete-voice"/><div class="aui-btn aui-btn-block-app aui-btn-app" tapmode onclick="" id="record"><span class="aui-iconfont aui-icon-voice" style="color:#fff"/>&nbsp;&nbsp;长按开始录音</div> -->
+        <textarea class="app-border" cols="50" rows="5" placeholder="说说对住宿的特别要求，如往返机场大巴直达、免费接机、靠近景点..." id="note"></textarea>
+        <div class="div-blank"></div>
+        <div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="submit()" id="submit">发布订单</div>
+        </div>
+        <div class="div-blank"></div>
+         <div class="aui-text-center"><img width="25px" src="../image/safe_icon.png"/><span class="safe-tip">全程预定保障，到店直接入住</span></div>
+        <div class="div-blank"></div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<!-- <script type="text/javascript" src="../script/AppApi.js"></script> -->
+<!-- <script type="text/javascript" src="../script/DES3.js"></script> -->
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/location.js"></script>
+<!-- <script type="text/javascript" src="../script/hammer.min.js"></script> -->
+<!-- <script type="text/javascript" src="../script/qiao.js"></script> -->
+<script type="text/javascript">
+    // var longitude =0 ,latitude = 0;
+    // var city='', keyword='';
+    var checkInDate, checkOutDate;
+    var dayCount = 1;//入住天数
+    apiready = function(){
+        api.parseTapmode();
+        // if("ios" == api.systemType){
+        //     var obj = api.require('privacy');
+        //     obj.location(function(ret){
+        //         if(!ret.status){
+        //             api.alert({
+        //                 title: '提示', 
+        //                 msg: "请在‘设置－隐私－定位服务’中开启定位功能"
+        //             });
+        //         }
+        //     });
+        // }
+
+        if ('publish_order_win' == api.winName){
+            // $api.first($api.dom(".aui-list-view"))
+            $api.html($api.byId('first-cell'), '<div style="color:#333;">' + api.pageParam.roomName + '</div>');
+            $api.val($api.byId('room-price'), api.pageParam.roomPrice);
+        }
+    
+
+        var today = new Date();
+        var tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        setDate(today, tomorrow);
+        
+        
+        bMap = api.require('bMap');
+        bMap.getLocation({
+            accuracy: '100m',
+            autoStop: true,
+            filter: 1
+        }, function(ret, err){
+            if(ret.status){
+                longitude = ret.lon;
+                latitude = ret.lat;
+            }
+        });
+    }
+    
+    function openCalender(){
+
+        openWindow(function(delay){
+            api.openWin({
+                    name: "setdate_win",
+                    url: "setdate_win.html",
+                    
+                    pageParam:{
+                        checkInDate: String(checkInDate),
+                        checkOutDate: String(checkOutDate),
+                        winName: api.winName
+                    },
+                    delay: delay,
+                })     
+        })
+
+        
+    }
+    
+
+    function setDate(checkInDateArg, checkOutDateArg){
+        if (typeof(checkInDateArg) == 'string') {
+            checkInDateArg = new Date(checkInDateArg);
+            checkOutDateArg = new Date(checkOutDateArg);
+        };
+        checkInDate = checkInDateArg;
+        checkOutDate = checkOutDateArg;
+        dayCount = Math.round((checkOutDateArg - checkInDateArg)/86400000);
+        var text = (checkInDateArg.getMonth() + 1 )+ '月' + checkInDateArg.getDate()+ '日入住,' + 
+        (checkOutDateArg.getMonth() + 1 ) + '月' + checkOutDateArg.getDate()+ '日离店,共' + dayCount + '晚';
+        // $api.byId('date').innerHTML = text;
+        $api.text($api.byId('date'), text);
+    }
+    function validate(evt) {
+      var theEvent = evt || window.event;
+      var key = theEvent.keyCode || theEvent.which;
+      key = String.fromCharCode( key );
+      var regex = /[0-9]|\./;
+      if( !regex.test(key) ) {
+        theEvent.returnValue = false;
+        if(theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    var toggleFlag = false;
+    function counterMinus(elId, thresholdValue, minValue, stepValue){
+        var element = $api.byId(elId);
+        var elementVal = parseInt($api.val(element));
+        if (elementVal) {
+            if (elementVal < thresholdValue) {
+                $api.val(element, minValue);
+                $api.addCls($api.prev(element), 'aui-disabled');
+            }else{
+                $api.val(element, elementVal - stepValue);
+            }
+        }else{
+            $api.val(element, minValue);
+        }
+    }
+   function counterPlus(elId, minValue, stepValue){
+        var element = $api.byId(elId);
+        var elementVal = parseInt($api.val(element));
+        if (elementVal) {
+            $api.val(element, elementVal + stepValue);
+            $api.removeCls($api.prev(element), 'aui-disabled');
+        }else{
+            $api.val(element, minValue);
+        }
+    }
+
+    
+    
+    function getMyLocation(){
+    		selectCityFlag = false;
+        mapLocation(false);
+    }
+
+    function submit(){
+        
+         if ($api.text($api.byId('location')) == '正在定位...') {
+            toast('请选择目的地');
+            return;
+        };
+        var peopleCount = parseInt($api.val($api.byId('people-count')));
+        if (!peopleCount) {
+            toast('入住人数无效，请重新输入');
+            return;
+        };
+        var roomCount = parseInt($api.val($api.byId('room-count')));
+        if (!roomCount) {
+            toast('房间数量无效，请重新输入');
+            return;
+        };
+        var roomPrice = parseInt($api.val($api.byId('room-price')));
+        if (!roomPrice) {
+            toast('单间房价无效，请重新输入');
+            return;
+        };
+        // var currentCity = city ? city : '厦门';
+
+        var pageParam = api.pageParam;
+        pageParam.dateText = $api.text($api.byId('date'));
+        pageParam.checkInDate = checkInDate.toString();
+        pageParam.checkOutDate = checkOutDate.toString();
+        pageParam.longitude = longitude;
+        pageParam.latitude = latitude;
+        pageParam.city =  $api.text($api.byId('city'));
+        pageParam.location =  $api.text($api.byId('location'));
+        pageParam.peopleCount = peopleCount;
+        pageParam.roomCount = roomCount;
+        pageParam.roomPrice = roomPrice;
+        pageParam.dayCount =  dayCount;
+        pageParam.note = $api.val($api.byId('note'));
+        openWindow(function(delay){
+
+            api.openWin({
+                    name: "confirm_order_win",
+                    url: "confirm_order_win.html",
+                    
+                    pageParam:pageParam,
+                    delay: delay
+                })     
+        })
+    }
+</script>
+</html>

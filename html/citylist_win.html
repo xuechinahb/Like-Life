@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+        <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">切换城市</div>
+        <a class="aui-iconfont aui-icon-menu aui-pull-right"></a>
+    </header>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    function closeWin(){
+        api.closeWin();
+    }
+    apiready = function(){
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        var headerPos = $api.offset(header);
+        var body_h = $api.offset($api.dom('body')).h;
+//      api.openFrame({
+//          name: 'template_frm',
+//          url: 'template_frm.html',
+//          bounces: false,
+//          rect: {
+//              x: 0,
+//              y: headerPos.h,
+//              w: headerPos.w,
+//              h: 'auto'
+//          }
+//      })
+        var cityList = api.require('UICityList');
+		cityList.open({
+			rect:{
+				x: 0,
+				y:headerPos.h,
+				w: headerPos.w,
+				h: body_h - headerPos.h
+			},
+			resource: "widget://res/citylist.json",
+			styles: {searchBar: {                   
+        					bgColor: '#e9e9e9',         
+       					 cancelColor: '#737373'      
+    						},
+
+    			location: {                     //（可选项）JSON对象；定位提示文字样式
+        			size: 16                   //（可选项）数字类型；定位提示文字大小，默认：12.0
+    			},
+
+    			item: {                         //（可选项）JSON对象；列表项的样式
+        			bgColor: '#fff',            //（可选项）字符串类型；列表项的背景色，支持rgb、rgba、#；默认：'#FFFFFF'
+       			 activeBgColor: '#f66',   //（可选项）字符串类型；列表项按下时的背景色，支持rgb、rgba、#；默认：'#696969'
+        			color: '#000',              //（可选项）字符串类型；列表项的文字颜色，支持rgb、rgba、#，默认：'#000000'
+        			size: 16,                 //（可选项）数字类型；列表项的文字大小，默认：14.0
+        			height: 45                  //（可选项）数字类型；列表项的高度，默认：40.0
+                }
+   			 },
+    			currentCity: '当前城市：' + api.pageParam.city,
+    			locationWay: "",
+    			// hotTitle: '',
+    			placeholder: '输入城市名或首字母查询'
+		}, function(ret, err){
+			if(ret.eventType == 'selected'){
+        			// alert(JSON.stringify(ret.cityInfo));
+                    api.closeWin();
+                   api.execScript({
+                    name: api.pageParam.fromWin,
+                    frameName: api.pageParam.fromFrm,
+                    script: 'setCity(\''+ ret.cityInfo.city + '\');'
+                });
+    		}
+		});
+//		api.openFrame({
+//	        name: 'citylist_frm',
+//	        url: 'citylist_frm.html',
+//	        rect: {
+//		        x:0,
+//		        y:100,
+//		        w:300,
+//		        h:500
+//	        }
+//      });
+    };
+</script>
+</html>

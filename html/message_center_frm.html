@@ -1,0 +1,383 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    .title{
+        font-size: 18px;
+    }
+    .content{
+        font-size: 15px;
+
+    }
+    .have-read-msg *{
+        color: #777;
+    }
+    .message-time{
+        font-size: 12px;
+        margin-top: 5px;
+    }
+</style>
+<body>
+    <div class="aui-content">
+      <ul class="aui-list-view" id="list">
+       <!--  <li class="aui-list-view-cell">
+          <div class="title">Facebook 坚信开源的力量</div>
+          <div class="content aui-ellipsis-1">当社区集合起来编写代码时，其好处是不可估量的。有人能指出问题所在，同时解决方案也会很快跟进。借助于社区的力量，大家可以一同解决所面临的挑战，这也会不断加速创新的过程，同时社区会突破既有技术的限制。当然了，成功的项目依赖于强大且富有合作精神的社区。在新的一年开始之际，我们一起来盘点一下 Facebook 在 2015 年排名前 5 的开源项目，度量指标则是根据社区活跃度与影响力来决定的。</div>
+        </li> -->
+        </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    var unReadCount = 0;
+    apiready = function(){
+        api.parseTapmode();
+        pullRefresh(getMsgList, true);
+        api.addEventListener({
+            name: 'message_center_refresh'
+        }, function(ret, err){
+            pullRefresh(getMsgList, true);
+        });
+    }
+        
+    function getMsgList(pageIndex){
+      if (pageIndex > totalPage) {
+            return;
+        };
+      var params = new Object();
+      params['userNum'] = $api.getStorage('userNum');
+      // params['userID'] = 'oBpDWwUoBisxQu2tVhNOiPiizfIs';
+      params['pageCount'] = 15;
+      params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.message_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        // api.alert({
+        //     title: 'title', 
+        //     msg: 'msg_content:' + JSON.stringify(ret)
+        // });
+        api.refreshHeaderLoadDone();
+        var more = $api.byId("more");
+        if(more){
+          $api.remove(more);
+        }
+        var tipText = $api.byId('tip-text');
+        if (tipText) {
+          $api.remove(tipText);
+        };
+        responseCallback(ret, err, function(){
+
+          if (!ret.unReadCount) {
+            if(1 == pageIndex){
+              $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有未读消息!</div>');
+              $api.addCls($api.byId('list'),'aui-hide');
+               api.sendEvent({
+                    name: 'badge_event',
+                    extra: {msgNum: 0}
+                });
+            }
+            return;
+          }else{
+            unReadCount = ret.unReadCount;
+            api.sendEvent({
+                name: 'badge_event',
+                extra: {msgNum: unReadCount}
+            });
+            var listhtml = '';
+            $api.removeCls($api.byId('list'),'aui-hide');
+            totalPage = ret.totalPage;
+            for(var i = 0; i < ret.msgCenterList.length; i++){
+                var item =ret.msgCenterList[i];
+                if ('未读' == item.state) {
+                    listhtml += '<li class="aui-list-view-cell" '
+                }else{
+                    listhtml += '<li class="aui-list-view-cell have-read-msg" '
+                }
+                var jsonStr = JSON.stringify(item);
+                jsonStr = jsonStr.replace(/\"/g, '\\\'');
+                
+                // var msgTitle = '';
+                // if (item.title) {
+                //     msgTitle = item.title;
+                // }
+                listhtml += 'onclick="openMsgDetail(this, \''+ jsonStr +'\','+ ((page - 1)*15 + i + 1 ) + ')"><div class="title">'+ item.title +'<span class="aui-pull-right message-time">'+item.time+'<span></div><div class="content aui-ellipsis-1">'+ item.content+ '</div></li>'
+            }
+            setTimeout("api.parseTapmode()", 100);
+            if(pageIndex == 1){
+              $api.html($api.byId('list'), listhtml);
+            }else{
+             $api.append($api.byId('list'), listhtml);
+            }
+            page += 1;
+            if (page > totalPage) {
+              return;
+            };
+            $api.after($api.byId('list'), '<p id="more" tapmode onclick="getMsgList('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/);
+      });
+    }
+    function openMsgDetail(el, arg, index){
+        var msgDetail = eval('(' + arg + ')');
+        if (!$api.hasCls(el, 'have-read-msg')) {
+            $api.addCls(el, 'have-read-msg');
+            updateMsgState(msgDetail.msgID,arg, index);
+            unReadCount--;
+            if (unReadCount < 0) {
+                unReadCount = 0;
+            }
+            api.sendEvent({
+                name: 'badge_event',
+                extra: {msgNum: unReadCount}
+            });
+        }else{
+            openMsgDetailWin(arg, index);
+        }
+       
+
+
+       
+    }
+    function updateMsgState(msgId, msgDetail, index){
+        showLoading();
+        var params = new Object();
+        // params['userNum'] = $api.getStorage('userNum');
+        params['msgId'] = msgId;
+        params['FKEY'] = DES3.APPKEY();
+        api.ajax({
+            url:UrlProvider.message_state,
+            method: 'post',
+            headers:{"content-type": "application/x-www-form-urlencoded"},
+            data:{body:
+              "reqData=" + encodeURIComponent(JSON.stringify(params))
+          }   
+        },function(ret,err){
+            api.hideProgress();
+            // api.alert({
+            //     title: 'title', 
+            //     msg: 'msg_content:' + JSON.stringify(ret)
+            // });
+            openMsgDetailWin(msgDetail, index);
+        });
+    }
+
+    function openMsgDetailWin(msgDetail, index){
+        openWindow(function(delay){
+            api.openWin({
+              name: 'message_detail_win',
+              url: 'message_detail_win.html',
+              pageParam:{
+                msgDetail: msgDetail,
+                elIndex: index
+              },
+              delay: delay
+            })     
+        })
+    }
+
+    function rmMsg(index){
+        var childEl = $api.first($api.byId('list'));
+        var counter=0;
+        do{
+            counter++;
+            if (counter == index) {
+                $api.addCls(childEl, 'aui-hide');
+                break;
+            }
+        }while(childEl = childEl.nextSibling);
+    }
+</script>
+<!--<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    var db, dbName;
+    var index = 0;
+    apiready = function(){
+        api.parseTapmode();
+        db = api.require('db');
+        dbName = 'likelife_' + $api.getStorage('userNum') + '_db';
+        db.openDatabase({
+            name: dbName
+        }, function(ret, err){
+            if(ret.status){
+                // api.alert({msg:'数据库打开成功'});
+                pullRefresh(getMsg, true);
+            }else{
+                // api.alert({msg:err.msg});
+                setTimeout("pullRefresh(getMsg, true)", 300);
+            }
+        });
+        
+        api.addEventListener({
+            name: 'message_center_refresh'
+        }, function(ret, err){
+            pullRefresh(getMsg, true);
+        });
+
+        // var querySql = 'SELECT COUNT(*) FROM msg';
+        // db.selectSql({
+        //     name: dbName,
+        //     sql: querySql
+        // }, function(ret, err){
+        //     if(ret.status){
+        //         var data = ret.data;
+        //         var key = 'COUNT(*)';
+        //         index = data[0][key];
+        //         // queryAllMsg();
+        //         pullRefresh(queryAllMsg, true);
+        //     }
+        // });
+    }
+    
+
+
+
+
+    function getMsg(pageIndex){
+        if (1 == pageIndex) { 
+            index = 0;
+            getUnreadCount();
+        };
+        
+        var querySql = 'select * from msg  order by id desc limit 15 offset ' + index  ;
+        db.selectSql({
+            name: dbName,
+            sql: querySql
+        }, function(ret, err){
+            api.refreshHeaderLoadDone();
+            var more = $api.byId("more");
+            if(more){
+                $api.remove(more);
+            }
+            var tipText = $api.byId('tip-text');
+            if (tipText) {
+              $api.remove(tipText);
+            };
+            if(ret.status){
+                // api.alert({
+                //     title: 'title', 
+                //     msg: 'msg_content:' + JSON.stringify(ret)
+                // });
+                // return;
+                
+                var data = ret.data;
+                var listhtml = '';
+                if (data.length) {
+                    index += 15;
+                    var tipText = $api.byId('tip-text');
+                    if (tipText) {
+                      $api.remove(tipText);
+                    };
+                    for(var i = 0; i < data.length; i++){
+                        var item = data[i];
+                        if (item.readstate) {
+                            listhtml += '<li class="aui-list-view-cell have-read-msg" '
+                        }else{
+                            listhtml += '<li class="aui-list-view-cell" '
+                        }
+                        var jsonStr = JSON.stringify(item);
+                        jsonStr = jsonStr.replace(/\"/g, '\\\'');
+                        
+                        var msgTitle = '';
+                        if (item.title) {
+                            msgTitle = item.title;
+                        }
+                        listhtml += 'onclick="openMsgDetail(this, \''+ jsonStr +'\')"><div class="title">'+ msgTitle +'</div><div class="content aui-ellipsis-1">'+ item.content+ '</div></li>'
+                    }
+                    page++;
+                    if (data.length < 15) {
+
+                    }else{
+                        $api.after($api.byId('list'), '<p id="more" tapmode onclick="getMsg('+page+')">点击加载更多</p>');
+                    }   
+                   
+                }else if(1 == pageIndex){
+                    $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有未读消息!</div>');
+                    $api.addCls($api.byId('list'),'aui-hide');
+                }
+                if(pageIndex == 1){
+                  $api.html($api.byId('list'), listhtml);
+                }else{
+                 $api.append($api.byId('list'), listhtml);
+                }
+                
+                // api.alert({
+                //     title: 'title:'+ data.length, 
+                //     msg: 'data:' + data[1].content
+                    // msg: 'data:' + JSON.stringify(ret)
+                    // msg: 'count:' + Object.keys(data[0])[0]
+                // });  
+            }else{
+                if(1 == pageIndex){
+                  $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有未读消息!</div>');
+                  $api.addCls($api.byId('list'),'aui-hide');
+                }
+            }
+        });
+    }
+    function getUnreadCount(callback){
+
+        var querySql = 'SELECT COUNT(*) FROM msg where readstate = 0';
+        db.selectSql({
+            name: dbName,
+            sql: querySql
+        }, function(ret, err){
+            if(ret.status){
+                var data = ret.data;
+                var key = 'COUNT(*)';
+                // callback(data[0][key]);
+                api.sendEvent({
+                    name: 'badge_event',
+                    extra: {msgNum: data[0][key]}
+                });
+            }
+        });
+        
+    }
+    function updateMsg(index){
+        var updateSql = 'update msg set readstate = 1 where id = ' + index;
+        db.executeSql({
+            name: dbName,
+            sql: updateSql
+        }, function(ret, err){
+            if(ret.status){
+               getUnreadCount();
+            }
+        });
+    }
+
+    function openMsgDetail(el, arg){
+        $api.addCls(el, 'have-read-msg');
+        var msgDetail = eval('(' + arg + ')');
+        if (0 == msgDetail.readstate) {
+            updateMsg(msgDetail.id)
+        };
+        openWindow(function(delay){
+
+            api.openWin({
+              name: 'message_detail_win',
+              url: 'message_detail_win.html',
+              pageParam:{
+                msgDetail: arg
+              },
+              delay: delay
+            })     
+        })
+    }
+</script>-->
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style type="text/css">
+    	body{
+    		background-color: #000;
+    	}
+        #image-index{
+            text-align: center;
+            /*margin-top: 80%;*/
+            color: #fff;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<style type="text/css">
+
+
+</style>
+<body>
+   <div id="image-index"></div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript">
+
+	var imagesCount;
+    apiready = function(){
+        api.parseTapmode();
+        imagesCount = api.pageParam.imagesCount;
+        if (imagesCount) {
+            updateIndex(api.pageParam.activeIndex);
+        }
+    }
+    
+    function updateIndex(indexArg){
+    	var index = indexArg;
+    	if ((typeof indexArg) == 'string') {
+    		index = parseInt(indexArg);
+    	}
+    	$api.html($api.byId('image-index'), (index + 1) + '/' + imagesCount);
+    }
+</script>
+</html>

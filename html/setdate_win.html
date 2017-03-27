@@ -1,0 +1,302 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+    <style type="text/css">
+        #year-month{
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #f66;
+            text-align: center;
+        }
+        #prompt{
+            position: absolute;
+            width: 180px;
+            font-size: 15px;
+            text-align: center;
+            color: #fff;
+            background-color: rgba(115,115,115,60);
+            bottom: 20px;
+            left: 0px;
+            right: 0px;
+            padding: 5px 0px;
+            border: 1px #737373 solid;
+            border-radius: 5px;
+            margin-left: auto;
+            margin-right: auto;
+
+        }
+        .check-out-prompt{
+            color: red !important;
+            background-color: rgba(255, 255,255, 60) !important;
+            border: 1px #fff solid  !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+        <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">选择日期</div>
+        <a class="aui-iconfont aui-icon-menu aui-pull-right"></a>
+    </header>
+    <div id="year-month"></div>
+
+
+    <p id="prompt">请选择入住日期</p>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/date.format.js"></script>
+<script type="text/javascript">
+    function closeWin(){
+        // var obj = api.require('UICalendar');
+        // obj.close();
+        api.closeWin();
+    }
+    var curDate, checkInDate, checkOutDate;
+    // var flag = false;
+    var lastSelectedDate;//上一次选中的入住日期
+    var clearSpecialDateFlag;
+    apiready = function(){
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        var headerPos = $api.offset(header);
+        var body_h = $api.offset($api.dom('body')).h;
+        // api.openFrame({
+        //     name: 'setdate_frm',
+        //     url: 'setdate_frm.html',
+        //     bounces: true,
+        //     rect: {
+        //         x: 0,
+        //         y: headerPos.h,
+        //         w: headerPos.w,
+        //         h: 'auto'
+        //     }
+        // })
+        curDate=new Date();
+        curDate = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate());
+        // var _checkInDate, _checkOutDate;
+        // var pageParam = api.pageParam;
+        // _checkInDate = new Date(pageParam.checkInDate);
+        // _checkOutDate = new Date(pageParam.checkOutDate);
+        // var specialDateArray = new Array();
+        // var arrItem = new Object();
+        // arrItem['date'] = _checkInDate.format("yyyy-mm-dd");
+        // arrItem['bg'] = 'widget://image/check_in.png';
+        // specialDateArray.push(arrItem);
+        // var arrItem1 = new Object();
+        // arrItem1['date'] = _checkOutDate.format("yyyy-mm-dd");
+        // arrItem1['bg'] = 'widget://image/check_out.png';
+        // specialDateArray.push(arrItem1);
+        /********begin**********/
+        var obj = api.require('UICalendar');
+        obj.open({
+            rect: {
+                x: 0,
+                y: headerPos.h + 40,
+                w: headerPos.w,
+                h: body_h - headerPos.h
+            },
+            styles: {
+                bg: 'rgba(0,0,0,0)',
+                week: {
+                    weekdayColor: '#3b3b3b',
+                    weekendColor: '#3b3b3b',
+                    size: 16
+                },
+                date: {
+                    color: '#3b3b3b',
+                    selectedColor: '#fff',
+                    selectedBg: 'widget://image/check_in.png',
+                    // selectedColor:'#3b3b3b',
+                    // selectedBg:'#3b3b3b',
+                    size: 14
+                },
+                today: {
+                    color: '#fff',
+                    bg: '#dbdbdb'
+                },
+                specialDate: {
+                    color: '#fff',
+                    bg: '#f66'
+                }
+            },
+           // specialDate:specialDateArray/* [{'date':'2015-12-14'},{'date':'2015-12-15'}]*/,
+           specialDate: [{'date':(new Date(api.pageParam.checkInDate)).format("yyyy-mm-dd")}]
+            // switchMode: 'vertical',
+            // fixedOn: '',
+            // fixed: true
+        }, function(ret, err){
+            if(ret){
+                // $api.byId(year-month).innerHTML = JSON.stringify(ret.year) + "年" + JSON.stringify(ret.month) + "月";
+                // alert('eventType=' + ret.eventType);return;
+                var str = ret.year + "年" + ret.month + "月";
+                $api.byId('year-month').innerHTML = str;
+                var eventType = ret.eventType;
+                if (eventType == 'show' || eventType == 'switch') {
+                    return;
+                };
+
+                var temp = new Date(ret.year, ret.month - 1, ret.day);
+                // if (!flag) {
+                //     flag = true;
+                //     return;
+                // };
+                if (temp < curDate) {
+                    checkInDate = null;
+                    toast('日期不能晚于今天');
+                    setPromptStyle(false);
+                    clearSelected(temp);
+                }else{
+                    if (!checkInDate) {
+                        checkInDate = temp;
+                        setPromptStyle(true);
+                        updateSelectedStyle(obj, temp);
+
+                    }else if(temp < checkInDate){
+                        checkInDate = temp;
+                        updateSelectedStyle(obj, temp);
+                        // setPromptStyle(true);
+                    }else if(temp > checkInDate){
+                        checkOutDate = temp;
+                        var day = (checkOutDate - checkInDate)/86400000;
+                        var text = checkInDate.getMonth() + '月' + checkInDate.getDate()+ '日入住,' + 
+        checkOutDate.getMonth() + '月' + checkOutDate.getDate()+ '日离店,共' + day + '晚';
+                        // var jsfun = "setDate('" + checkInDate+ "','" +checkOutDate + "')";
+                        
+                        var jsfun = 'setDate(' + '\'' + checkInDate + '\',\'' + checkOutDate + '\');';
+                        api.execScript({
+                            name: api.pageParam.winName,
+                            frameName: 'publish_order_frm',
+                            script: jsfun
+                            // script: "setDate('" + checkInDate + "')"
+                            // script: "setDate('"+ text + "')"
+                        });
+                        closeWin();
+                    }
+                }
+                // alert(str);
+                // alert(JSON.stringify(ret));
+            }
+        });
+    /********end**********/
+    setCheckStyle();
+
+};
+    function setPromptStyle(flag){
+        if (flag) {
+            $api.byId('prompt').innerHTML = '请选择离店日期';
+            // $api.byId('prompt').style.color = 'red';
+            $api.addCls($api.byId('prompt'), 'check-out-prompt');
+        }else{
+            $api.byId('prompt').innerHTML = '请选择入住日期';
+            // if ($api.hasCls($api.byId('prompt'), 'check-out-prompt')) {
+                $api.removeCls($api.byId('prompt'), 'check-out-prompt');
+            // };
+            
+        }
+        // $api.toggleCls($api.byId('prompt'), 'check-out-prompt');
+        
+    }
+
+    function updateSelectedStyle(calendar,newDate){
+        if (!clearSpecialDateFlag) {
+            clearSpecialDateFlag = true;
+            setCheckStyle(true);
+        };
+       //  if (lastSelectedDate) {
+       //      calendar.setSpecialDates({
+       //          specialDates:[{
+       //             date: String(lastSelectedDate.format("yyyy-mm-dd")),
+       //             color: '#3b3b3b',
+       //             bg: 'rgba(0,0,0,0)'
+       //         }]
+       //     });
+       //  };
+        lastSelectedDate = newDate;
+       //  var selectedDateStr = String(lastSelectedDate.format("yyyy-mm-dd"));
+       //  calendar.setDate({
+       //      date: selectedDateStr,
+       //      ignoreSelected: true
+       //  },function(ret,err){
+            
+       //  });
+       //  var e = window.event;
+       //  if (e) {
+       //      e.preventDefault(); 
+       //  };
+       //  calendar.setSpecialDates({
+       //      specialDates:[{
+       //         date: selectedDateStr,
+       //         color: '#fff',
+       //         bg: 'widget://image/check_in.png'
+       //     }]
+       // });
+    };
+
+    function setCheckStyle(flag){
+        var pageParam = api.pageParam;
+        _checkInDate = new Date(pageParam.checkInDate);
+        _checkOutDate = new Date(pageParam.checkOutDate);
+        var specialDateArray = new Array();
+        
+        var arrItem = new Object();
+        arrItem['date'] = _checkInDate.format("yyyy-mm-dd");
+        var arrItem1 = new Object();
+        arrItem1['date'] = _checkOutDate.format("yyyy-mm-dd");
+        if (!flag) {
+            arrItem['bg'] = 'widget://image/check_in.png';
+            arrItem1['bg'] = 'widget://image/check_out.png';
+        }else{
+            arrItem['bg'] = 'rgba(0,0,0,0)';
+            arrItem['color'] = '#3b3b3b';
+            arrItem1['bg'] = 'rgba(0,0,0,0)';
+            arrItem1['color'] = '#3b3b3b';
+        }
+        specialDateArray.push(arrItem);
+        specialDateArray.push(arrItem1);
+
+        var obj = api.require('UICalendar');
+
+        obj.setSpecialDates({
+            specialDates:specialDateArray
+        });
+    }
+
+    function clearSelected(notSelectedDate){
+         var obj = api.require('UICalendar');
+        var notSelectedDateStr = String(notSelectedDate.format("yyyy-mm-dd"));
+        obj.setDate({
+            date: notSelectedDateStr,
+            ignoreSelected: true
+        },function(ret,err){
+            
+        });
+
+        if (lastSelectedDate) {
+            var lastSelectedDateStr = String(lastSelectedDate.format("yyyy-mm-dd"));
+            obj.setDate({
+                date: lastSelectedDateStr,
+                ignoreSelected: false
+            },function(ret,err){
+                
+            });
+        };
+        
+        var e = window.event;
+        if (e) {
+            e.preventDefault(); 
+        };
+    
+    }
+    
+</script>
+</html>

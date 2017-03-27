@@ -1,0 +1,155 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	.aui-btn span{
+		color: white;
+	}
+	/*.subtitle{
+        margin: 10px 0px 5px;
+        color: #f66;
+    }*/
+ 
+</style>
+<body>
+	<div class="aui-content-padded">
+		<div class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="roomFacility()">便利设施<span class="aui-iconfont aui-icon-right aui-pull-right"></span></div>
+
+		<br/>
+		<div class="subtitle">交通出行</div>
+		<textarea id="traffic" class="app-border" cols="50" rows="3" placeholder="列出从机场、火车站、汽车站前往酒店的详细坐车路线"></textarea>
+		<div class="subtitle" style="margin-top:-10px;" >其他注意事项</div>
+		<textarea id="other-issue" class="app-border" cols="50" rows="6" placeholder="入住条例，日常需要注意的事项等"></textarea>
+		<div class="aui-btn aui-btn-block-app aui-btn-app aui-btn-confirm" tapmode onclick="submit()">发布房源</div>
+</div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js" ></script>
+<script type="text/javascript" src="../script/upload.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript">
+    // var facilityText;
+    var facilityArray;
+    var checkStateArray;
+    var coverImageUrl, roomImageUrls;//上传图片后得到的url
+    apiready = function(){
+        api.parseTapmode();
+    }
+    function roomFacility(){
+
+    	openWindow(function(delay){
+    		api.openWin({
+    			name: "room_facility_win",
+    			url: "room_facility_win.html",
+    			pageParam:{
+                    state: checkStateArray
+    			},
+    			delay: delay
+    		})     
+    	});
+    }
+
+    function setFacility(arr, state){
+
+        checkStateArray = state;
+        // var tempArr = arr.split(',');
+        // facilityArray = new Array();
+        // for(var i = 0; i < tempArr.length; i++){
+        //     facilityArray.push(parseInt(tempArr[i]));
+        // }
+        facilityArray = arr.split(',');
+    }
+
+    function submit(){
+        // alert('facilityText='+ facilityText);
+        if (!facilityArray) {
+            toast('请选择便利设施');
+            return;
+        };
+        if (!facilityArray.length) {
+            toast('请选择便利设施');
+            return;
+        };
+        // var facilityArray = facilityText.split(',');
+        var traffic = $api.val($api.byId('traffic'));
+        if (!traffic) {
+            toast('请填写交通出行路线');
+            return;
+        };
+
+        showLoading('正在提交...');
+        var pageParam = api.pageParam;
+        if (roomImageUrls && (roomImageUrls.length == pageParam.roomImagePathArray.length + 1)) {
+            submitRequest();
+            return;
+        };
+        upload([pageParam.coverImagePath], function(imageUrlArray){
+            if(!imageUrlArray.length){
+                api.hideProgress();
+                toast('上传图片失败')
+                return false;
+            }
+            coverImageUrl = imageUrlArray[0];
+            upload(pageParam.roomImagePathArray, function(imageUrlArray){
+                if(!imageUrlArray.length){
+                    api.hideProgress();
+                    toast('上传图片失败')
+                    return false;
+                }
+                roomImageUrls = imageUrlArray;
+                roomImageUrls.unshift(coverImageUrl);
+                // var appkey = DES3.APPKEY();
+                // var params = encodeURIComponent("{'address': '"+ pageParam.address+ "','attention':'"+pageParam.roomDesc+ "','devices':" + JSON.stringify(facilityArray)+ ",'phoneNum':'"+ pageParam.phoneNum + "','picCoverID':'"+coverImageUrl+ "','picsID':" + JSON.stringify(roomImageUrls) +",'longitude':'"+ pageParam.longitude  +",'userID':'"+ $api.getStorage('userNum') +"','FKEY':'"+ appkey +"'}");
+                submitRequest();
+
+            });
+
+
+
+        })
+
+    }
+
+    function submitRequest(){
+        var pageParam = api.pageParam;
+        var params = new Object();//组合参数
+        
+        api.ajax({
+             url:UrlProvider.newroom,
+             method: 'post',
+             headers:{"content-type": "application/x-www-form-urlencoded"},
+             data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+            responseCallback(ret, err, function(){
+                api.closeToWin({
+                    name: 'slidLayout', 
+                });
+                api.sendEvent({
+                    name: 'publish_room_refresh'
+                });
+                // api.alert({
+                //     title: '提示',
+                //     msg: '房源发布成功',
+                //     buttons:['确定']
+                // },function(ret,err){
+                //     if(ret.buttonIndex == 1){
+                //         // api.closeWin();
+                //         api.closeToWin({
+                //             name: 'slidLayout', 
+                //         });
+                //     }
+                // });
+            });
+        });
+    }
+
+</script>
+</html>

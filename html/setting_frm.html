@@ -1,0 +1,210 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+    
+
+
+</style>
+<body>
+    <div class="aui-content">
+        <li class="aui-list-view-cell" tapmode onclick="openFreeBenefit()">
+            <a class="aui-arrow-right">免费福利</a>
+        </li>
+         <li class="aui-list-view-cell" tapmode onclick="shareText('取消')">
+            <a class="aui-arrow-right">邀请好友使用来来订房</a>
+        </li>
+        <li class="aui-list-view-cell" tapmode onclick="openNewWin('user_guide_win')">
+            <a class="aui-arrow-right">用户指南</a>
+        </li>
+         <li class="aui-list-view-cell" tapmode onclick="openWin(0)">
+            <a class="aui-arrow-right">关于服务费</a>
+        </li>
+       <!--  <li class="aui-list-view-cell" tapmode onclick="openWin(1)">
+            <a class="aui-arrow-right">服务条款</a>
+        </li> -->
+         <li class="aui-list-view-cell" tapmode onclick="openNewWin('terms_of_service_win')">
+            <a class="aui-arrow-right">服务条款</a>
+        </li>
+         <li class="aui-list-view-cell" tapmode onclick="openNewWin('privacy_greement_win')">
+            <a class="aui-arrow-right">隐私政策</a>
+        </li>
+       <!--  <li class="aui-list-view-cell" tapmode onclick="openWin('switch')">
+            <a class="aui-arrow-right">推荐给朋友</a>
+        </li> -->
+        <li class="aui-list-view-cell" tapmode onclick="contactUs()">
+            <a class="aui-arrow-right">联系我们</a>
+        </li>
+        <li class="aui-list-view-cell" tapmode onclick="exit()">
+            <a class="aui-arrow-right">退出登录</a>
+        </li>
+            
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+    }
+    function openWin(index){
+        var title, content;
+        if (index == 0) {
+            title = '关于服务费';
+            content = '<div class="app-title">Q：什么是服务费？什么情况下收取？</div>A：1、此费用是来来订房App收取的费用，您通过来来订房App出租您的房源，我们将对每笔成交的订单收取订单总额的8%的费用作为服务费。<br/>&nbsp;&nbsp;&nbsp;&nbsp;2、用户入住后发现实际房源与展示照片、期望要求有很大差距等不符情况下，采用人工客服退款的订单，除了给用户全额退款外，也将对房东收取订单总额的8%作为服务费，此费用将从当期结款中扣除。';
+        }else if(index == 1){
+            title = '条款与政策';
+            content = '<div class="app-title">退订政策</div>1.一旦成功生成预定成功且准备入住的订单，是无法取消的。<br/>2.发布订单后在选择房源时取消订单的，所支付的房费，将会在7个工作日内返还到支付账户上。<br/>3.发现房源与照片不符的情况下，可使用投诉功能，提交照片证据和文字说明，经过客服审核后属实，我们讲退还您的全部房费。<br/>4.其他情况无法协商解决的，请直接提交投诉资料。<br/><br/>关于退订的解决办法：<br/>1.房客原因导致无法按时入住，房费是无法退款的，您可以与房东协商。<br/>2.房东原因无法为房客安排房间，由房东帮客人预定同一天的房源或协商赔偿，以免影响房客的出行安排。';
+        }
+        openWindow(function(delay){
+
+            api.openWin({
+                    name: "setting_item_win",
+                    url: "setting_item_win.html",
+                    // url: "backup/aui_demo.html",
+                    pageParam:{
+                        title: title,
+                        content: content
+                    },
+                    delay: delay
+                })     
+        })
+    }
+
+    function openNewWin(winName){
+    openWindow(function(delay){
+      api.openWin({
+        name: winName,
+        url: winName + '.html',
+        delay: delay
+      })     
+    })
+  }
+    function contactUs(){
+        openWindow(function(delay){
+
+            api.openWin({
+                    name: "contact_us_win",
+                    url: "contact_us_win.html",
+                    delay: delay
+                })     
+        })
+
+        // function openRoomListPickerFrm(){
+        //   var winWidth = api.winWidth;
+        //   var winHeight = api.winHeight;
+        //   api.openFrame({
+        //       name: 'room_list_picker_win',
+        //       url: 'room_list_picker_win.html',
+        //       pageParam: {
+        //           name: 'test'
+        //       },
+              
+        //   });
+
+        // }
+        // openRoomListPickerFrm();
+    }
+    function exit(){
+        // api.confirm({
+        //     title: '提示',
+        //     msg: '退出登录?',
+        //     buttons:['确定', '取消']
+        // },function(ret,err){
+        //     if(ret.buttonIndex == 1){
+        //         $api.rmStorage('userId')
+        //         api.closeWin({name:'slidLayout'})
+        //     }
+        // });
+       confirmDialog('退出登录?', function(){
+                showLoading();
+                $api.rmStorage('userId');
+                // $api.clearStorage();
+                var loginWay =  $api.getStorage('loginWay');
+                
+                if (loginWay == '微博') {
+                    var weibo = api.require('weibo');
+                    weibo.cancelAuth(function(ret,err){
+                        // if(ret.status){
+                        //     api.alert({msg:'登出成功'});
+                        // }else{
+                        //     api.alert({msg:'登出失败:' + err.code});
+                        // }
+                        closeMainWin();
+                    });
+                }else if(loginWay == 'QQ'){
+                    var obj = api.require('qq');
+                    obj.logout(function(ret,err) {
+                        // if (ret.status) {
+                            // api.alert({msg:'登出成功'});
+                        // }else{
+                            // api.alert({msg:err.msg});
+                        // }
+                        closeMainWin();
+                    });
+                }else{
+                    closeMainWin();
+                }
+                
+
+                
+                
+       })
+    }
+
+    function closeMainWin(){
+        var dbName = 'likelife_' + $api.getStorage('userNum') + '_db';
+        var db = api.require('db');
+        db.closeDatabase({
+            name:dbName
+        }, function(ret, err){
+            // if(ret.status){
+            //     api.alert({msg:'关闭数据库成功'});
+            // }else{
+            //     api.alert({msg:'error'});
+            // }
+        });
+        api.hideProgress();
+        var skipLoginWin = $api.getStorage('skipLoginWin');
+        if (skipLoginWin) {
+            openWindow(function(delay){
+                api.openWin({
+                  name: 'login_win',
+                  url: 'login_win.html',
+                  pageParam:{exitFlag: true},
+                  delay: delay
+                })     
+              })
+        }else{
+            api.closeWin({name:'slidLayout'});
+        }
+    }
+
+    function openFreeBenefit(){
+        showLoading();
+        api.ajax({
+            url: UrlProvider.free_benefit,
+            method: 'post',
+        },function(ret, err){
+
+            responseCallback(ret, err, function(){
+
+               openWindow(function(delay){
+                api.openWin({
+                  name: 'free_benefit_win',
+                  url: 'free_benefit_win.html',
+                  pageParam:{url: ret.repDatas[0]},
+                  delay: delay
+                })     
+              })
+            });
+        })
+    }
+</script>
+</html>

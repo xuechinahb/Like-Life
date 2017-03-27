@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+       <!--  <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a> -->
+        <a class="aui-btn aui-btn-app aui-pull-left">
+        </a>
+        <div class="aui-title">选择房源</div>
+        <a class="aui-iconfont aui-icon-menu aui-pull-right" onclick="cancelOrder()">取消订单</a>
+    </header>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    function closeWin(){
+        api.closeWin();
+    }
+    apiready = function(){
+        api.parseTapmode();
+        if ('excellent_room_frm' == api.pageParam.fromFrame) {
+            $api.html($api.dom('.aui-title'), '等待接单');
+        }
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        var headerPos = $api.offset(header);
+        var body_h = $api.offset($api.dom('body')).h;
+        api.openFrame({
+            name: 'room_list_frm',
+            url: 'room_list_frm.html',
+            pageParam: api.pageParam,
+            bounces: true,
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: headerPos.w,
+                h: 'auto'
+            }
+        })
+
+        api.addEventListener({
+            name: 'keyback'
+        }, function(ret, err){
+            cancelOrder();
+        });
+    };
+    function cancelOrder(){
+        //  api.confirm({
+        //     title: '提示',
+        //     msg: '取消订单?',
+        //     buttons:['确定', '取消']
+        // },function(ret,err){
+        //     if(ret.buttonIndex == 1){
+        //         cancelOrderRequest();
+        //     }
+        // });
+        confirmDialog('取消订单?', cancelOrderRequest);
+    }
+
+    function cancelOrderRequest(){
+        showLoading();
+        var pageParam = api.pageParam;
+        var params = new Object();
+        // params['orderId'] = pageParam.orderId;
+        params['userID'] = $api.getStorage('userId');
+        params['FKEY'] = DES3.APPKEY();
+
+        var reqUrl = UrlProvider.cancel_order;
+        if ('excellent_room_frm' == api.pageParam.fromFrame) {
+            reqUrl = UrlProvider.cancel_specific_order;
+        }
+            
+        params['orderId'] = pageParam.orderId;
+        api.ajax({
+               url:reqUrl,
+               method: 'post',
+               headers:{"content-type": "application/x-www-form-urlencoded"},
+               data:{body:
+                "reqData=" + encodeURIComponent(JSON.stringify(params))
+            }   
+        },function(ret,err){
+            // api.alert({
+            //     title: 'title', 
+            //     msg: 'reqUrl:' + reqUrl + ',ret:' + JSON.stringify(ret)
+            // });
+            // return;
+            api.hideProgress();
+            closeWin();
+            // responseCallback(ret, err, function(){
+            //         toast(ret.resInfo);
+            //         closeWin();
+            //     }
+            // );
+        });
+
+    }
+
+
+   
+</script>
+</html>

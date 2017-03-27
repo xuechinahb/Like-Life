@@ -1,0 +1,274 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no" />
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+  
+  #header{
+    position: relative;
+  }
+  #div-name{
+    position: absolute;
+    top: 8px;
+    left: 55px;
+    vertical-align: middle;
+
+  }
+  .aui-list-view-cell{
+    padding: 12px 20px;
+  }
+
+
+  /*.vertical-middle{
+    position: absolute;
+    
+  }*/
+ /* .aui-list-view-cell{
+    padding-top: 0px;
+  }*/
+  /*.aui-list-view-cell *{
+    margin-top: 5px;
+  }*/
+  .text-large{
+    font-size: 20px;
+  }
+  .text-middle{
+    font-size: 16px;
+  }
+  .text-small{
+    font-size: 13px;
+  }
+  .text-dateinfo{
+    font-size: 20px;
+  }
+  .aui-btn-app{
+    margin-top: 10px;
+  }
+
+  .img-user-state{
+    padding-top: 10px;
+  }
+
+</style>
+<body>
+    <div class="aui-content">
+      <ul class="aui-list-view" id="list">
+        <!-- <li class="aui-list-view-cell">
+          <div id="header">
+            <img class="image-avatar" src="http://q.qlogo.cn/qqapp/1104800787/014695028CFC4A5672F2A6A11AB513B7/100" />
+            <div id="div-name">
+                <span class="text-22">名字</span>
+                <img src="../image/verified.png" height="20px">
+            </div>
+            <span  class="aui-pull-right" style="color:#f66;margin-top: 7px;" >准备接待</span>
+          </div>
+          <div><span class="text-22">2012年12月12日</span>入住<span class="aui-pull-right aui-iconfont aui-icon-right" style="color:black;"></span></div>
+          <div class="aui-padded-0-10">
+          <a href="tel:110"  class="aui-btn aui-btn-block-app aui-btn-app"  onclick="blank()">联系电话</a>
+          </div>
+        </li> -->
+
+       <!--  <li class="aui-list-view-cell">
+          <div id="header">
+            <img class="image-avatar" src="" />
+            <div id="div-name">
+                <span class="text-22"></span>
+                <img src="" height="20px">
+            </div>
+            <span  class="aui-pull-right" style="color:#f66;margin-top: 7px;" >准备接待</span>
+          </div>
+          <div><span class="text-22"></span>入住<span class="aui-pull-right aui-iconfont aui-icon-right" style="color:black;"></span></div>
+          <div class="aui-padded-0-10">
+          <a href="tel:"  class="aui-btn aui-btn-block-app aui-btn-app"  onclick="blank()"></a>
+          </div>
+        </li> -->
+    </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+       // alert('hhhh=' + $api.offset($api.byId('test')).h); 157
+        pullRefresh(getOrderList, true);
+        // $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有入住订单!</div>');
+    }
+        
+    function getOrderList(pageIndex){
+      if (pageIndex > totalPage) {
+        return;
+      };
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      params['pageCount'] = 10;
+      params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.landlord_reception_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        api.refreshHeaderLoadDone();
+        var more = $api.byId("more");
+        if(more){
+          $api.remove(more);
+        }
+        var tipText = $api.byId('tip-text');
+        if (tipText) {
+          $api.remove(tipText);
+        };
+        responseCallback(ret, err, function(){
+          if (!ret.repDatas || ret.repDatas.length < 2) {
+            if(1 == pageIndex){
+              $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">您还没有订单，快去抢单吧!</div>');
+              $api.addCls($api.byId('list'),'aui-hide');
+            }
+            return;
+          }else{
+            var listhtml = '';
+            // var more = $api.byId("more");
+            // if(more){
+            //   $api.remove(more);
+            // }
+            // var tipText = $api.byId('tip-text');
+            // if (tipText) {
+            //   $api.remove(tipText);
+            // };
+
+            $api.removeCls($api.byId('list'),'aui-hide');
+            totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+            for(var i = 0; i < ret.repDatas.length - 1; i++){
+              var item = ret.repDatas[i]; 
+               
+               //'{\'name\': \'haha\'}'
+              // if (item.state == '预定成功') {
+              //   // listhtml += '<li class="aui-list-view-cell" onclick="openWin(\'' + item.orderID + '\', \'user_order_detail\')">';
+              //   var jsonStr = JSON.stringify(item);
+              //   var jsonStr = jsonStr.replace(/\"/g, '\\\'');
+
+              //   listhtml += '<li class="aui-list-view-cell" onclick="openOrderDetail(\'' + jsonStr + '\')">';
+              // }else{
+              //   var elIndex = (pageIndex - 1) * 5 + i;
+              //   listhtml += '<li class="aui-list-view-cell" onclick="openNewComment(\'' + item.orderID + '\',' + elIndex + ')">';
+              // }
+              var userStateIcon;
+              if ('正常' == item.userState) {
+                userStateIcon = '../image/unverify.png';
+              }else{
+                userStateIcon = '../image/verified.png';
+              }
+              var userHeadImg = item.userHeadImg ? item.userHeadImg : '../image/user_default.png';
+
+              var nickNameClass = '';
+              if (item.nickName.length < 8) {//14
+                nickNameClass = 'text-large';
+              }else if (item.nickName.length < 17) {
+                nickNameClass = 'text-middle';
+              }else{
+                nickNameClass = 'text-small';
+              }
+
+              var checkStateHtml = '';
+              var orderStateVal = item.orderState;
+              if ('待入住' == orderStateVal) {
+                checkStateHtml = '<div class="aui-padded-10"><div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="checkState(this,\''+ item.houseID + '\',\''+ item.orderId +'\')">入住</div></div>';
+              }else if('已入住' == orderStateVal) {
+                // orderStateVal = '离店';
+                checkStateHtml = '<div class="aui-padded-10"><div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="checkState(this,\''+ item.houseID + '\',\''+ item.orderId +'\')">离店</div></div>';
+              }
+
+
+              listhtml += '<li class="aui-list-view-cell" onclick="openOrderDetail(\''+ item.orderId +'\')"><div id="header"><img class="image-avatar" src="'+ userHeadImg +'" /><div id="div-name"><span class="'+ nickNameClass +'">'+ item.nickName+'</span><img class="img-user-state" height="20px" src="'+userStateIcon+'"></div><span  class="aui-pull-right" style="color:#f66;margin-top: 10px;" >'+ orderStateVal +'</span></div><div><span class="text-dateinfo">'+item.dateInfo.substring(0, item.dateInfo.indexOf('/'))+'</span>入住<span class="aui-pull-right aui-iconfont aui-icon-right" style="color:black;"></span></div><div class="aui-padded-0-10"><a href="tel:'+ item.phoneNum+'"  class="aui-btn aui-btn-block-app aui-btn-app"  onclick="blank()">联系电话：'+ item.phoneNum+'</a></div>'+checkStateHtml+'</li>';
+              // alert('y=' + (157 * ((page - 1) * 5 + i + 1)));
+              // onclick="callPhone(\'' +item.phoneNum +'\')"
+              // setTimeout('openMap(\'' + item + '\',' + i + ')', 100 * i);
+              
+            }
+
+            if(pageIndex == 1){
+              $api.html($api.byId('list'), listhtml);
+            }else{
+             $api.append($api.byId('list'), listhtml);
+            }
+            page += 1;
+            if (page > totalPage) {
+              return;
+            };
+            $api.after($api.byId('list'), '<p id="more" tapmode onclick="getOrderList('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/);
+      });
+    }
+
+    
+    
+
+    function openOrderDetail(orderId){
+      openWindow(function(delay){
+
+        api.openWin({
+          name: 'reception_detail_win',
+          url: 'reception_detail_win.html',
+          pageParam:{
+            orderId: orderId
+          },
+          delay: delay
+        })     
+      })
+    }
+
+
+    function checkState(el, roomId, orderId){
+      showLoading();
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      params['houseID'] = roomId;
+      var requestUrl = '';
+      if ('入住' == $api.html(el)) {
+        requestUrl = UrlProvider.checkin;
+      }else if('离店' == $api.html(el)){
+        
+        requestUrl = UrlProvider.checkout;
+      }else{
+        return;
+      }
+      params['orderID'] = orderId;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:requestUrl,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        responseCallback(ret, err, function(){
+          if ('入住' == $api.html(el)) {
+            $api.html(el, '离店');
+            $api.text($api.last($api.first(el.parentNode.parentNode)), '已入住');
+          }else if('离店' == $api.html(el)){
+            $api.text($api.last($api.first(el.parentNode.parentNode)), '已离店');
+            $api.remove(el.parentNode);
+          }
+        });
+      });
+      blank();
+    }
+    
+</script>
+</html>

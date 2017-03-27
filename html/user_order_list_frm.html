@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no" />
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	.order-state{
+		color: #f66;
+	}
+	.app-title{
+		color: black;
+	}
+	#right-arrow{
+
+		float: right;
+		margin-top: -85px;
+		/*margin-left: 90%;*/
+	}
+	.aui-list-view-cell{
+		padding: 12px 20px;
+	}
+	.text-large{
+		font-size: 20px;
+	}
+  .text-middle{
+    font-size: 16px;
+  }
+  .text-small{
+    font-size: 13px;
+  }
+   .text-dateinfo{
+    font-size: 20px;
+  }
+	.aui-iconfont{
+		color: black;
+	}
+	/*.div-map{
+		height: 180px;
+	}*/
+</style>
+<body>
+    <div class="aui-content">
+      <ul class="aui-list-view" id="list">
+		   <!--  <li class="aui-list-view-cell">
+          <div ><span class="text-22 aui-ellipsis-1">这是标题</span> <span class="aui-pull-right order-state">这是标题</span></div>
+          <div style="margin-top: 10px;"><span class="text-22 aui-ellipsis-1">这是标题</span>入住</div>
+          <div>地址：深圳</div>
+          <a id="right-arrow" class="aui-pull-right aui-iconfont aui-icon-right"></a>
+          <div class="aui-padded-10">
+          <a href="tel:110"  class="aui-btn aui-btn-block-app aui-btn-app"  onclick="blank()">联系电话</a>
+          </div>
+        </li> -->
+		</ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/AppApi.js"></script>
+<script type="text/javascript" src="../script/DES3.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    var page = 1, totalPage = 1;
+    apiready = function(){
+        api.parseTapmode();
+       // alert('hhhh=' + $api.offset($api.byId('test')).h); 157
+        pullRefresh(getOrderList, true);
+        // $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有入住订单!</div>');
+        api.addEventListener({
+            name: 'user_order_list_refresh'
+        }, function(ret, err){
+            pullRefresh(getOrderList, true);
+        });
+    }
+        
+    function getOrderList(pageIndex){
+      if (pageIndex > totalPage) {
+    		return;
+    	};
+      var params = new Object();
+      var pageParam = api.pageParam;
+      params['userID'] = $api.getStorage('userId');
+      // params['userID'] = 'oBpDWwUoBisxQu2tVhNOiPiizfIs';
+      params['pageCount'] = 5
+      params['pageIndex'] = pageIndex;
+      params['FKEY'] = DES3.APPKEY();
+      api.ajax({
+        url:UrlProvider.user_order_list,
+        method: 'post',
+        headers:{"content-type": "application/x-www-form-urlencoded"},
+        data:{body:
+          "reqData=" + encodeURIComponent(JSON.stringify(params))
+        }   
+      },function(ret,err){
+        // api.alert({
+        //     title: 'title', 
+        //     msg: 'msg_content:' + JSON.stringify(ret)
+        // });
+        api.refreshHeaderLoadDone();
+        var more = $api.byId("more");
+        if(more){
+          $api.remove(more);
+        }
+        var tipText = $api.byId('tip-text');
+        if (tipText) {
+          $api.remove(tipText);
+        };
+        responseCallback(ret, err, function(){
+
+          if ( !ret.repDatas ||  ret.repDatas.length < 2) {
+            if(1 == pageIndex){
+              $api.before($api.byId('list'), '<div class="aui-content tip-text" id="tip-text">没有订单!</div>');
+              $api.addCls($api.byId('list'),'aui-hide');
+            }
+            return;
+          }else{
+            var listhtml = '';
+            // var more = $api.byId("more");
+            // if(more){
+            //   $api.remove(more);
+            // }
+            // var tipText = $api.byId('tip-text');
+            // if (tipText) {
+            //   $api.remove(tipText);
+            // };
+
+            $api.removeCls($api.byId('list'),'aui-hide');
+            totalPage = ret.repDatas[ret.repDatas.length - 1].totalPage;
+            for(var i = 0; i < ret.repDatas.length - 1; i++){
+              var item = ret.repDatas[i]; 
+               
+               //'{\'name\': \'haha\'}'
+              var jsonStr = JSON.stringify(item);
+              jsonStr = jsonStr.replace(/\"/g, '\\\'');
+              listhtml += '<li class="aui-list-view-cell" onclick="openOrderDetail(\'' + jsonStr + '\')">';
+
+              var phoneBtn = '';
+              var trafficRoute = '';
+              var commentBtn = '';
+              if (item.orderState == '待入住') {
+                // listhtml += '<li class="aui-list-view-cell" onclick="openWin(\'' + item.orderID + '\', \'user_order_detail\')">';
+
+                
+                phoneBtn = '<div class="aui-padded-10"><a href="tel:'+ item.fdPhoneNum +'" class="aui-btn aui-btn-block-app aui-btn-app" onclick="blank()">联系电话：'+ item.fdPhoneNum+'</a></div>';
+                trafficRoute = '<div class="aui-padded-10"><div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="trafficRoute('+ item.longitude + ','+ item.latitude +')" id="submit">查看路线</div></div>';
+              }else if(item.orderState == '待评价'){
+
+                var elIndex = (pageIndex - 1) * 5 + i;
+                // listhtml += '<li class="aui-list-view-cell" onclick="openNewComment(\'' + item.houseID + '\',' + elIndex + ')">';
+                commentBtn = '<div class="aui-padded-10"><div class="aui-btn aui-btn-block-app aui-btn-app " tapmode onclick="openNewComment(\'' + item.houseID + '\',\'' + item.orderId + '\',' + elIndex + ')">评价</div></div>';
+
+              }
+              // else{
+              //   listhtml += '<li class="aui-list-view-cell" onclick="openOrderDetail(\'' + jsonStr + '\')">';
+              // }
+              var houseTitleClass = '';
+              if (item.houseTitle.length < 8) {//14
+                houseTitleClass = 'text-large';
+              }else if (item.houseTitle.length < 17) {
+                houseTitleClass = 'text-middle';
+              }else{
+                houseTitleClass = 'text-small';
+              }
+              listhtml += '<div><span class="aui-ellipsis-1 '+ houseTitleClass+'">'+item.houseTitle +'</span> <span class="aui-pull-right order-state">'+ item.orderState +'</span></div><div style="margin-top: 10px;"><span class="text-dateinfo aui-ellipsis-1">'+item.dateInfo.substring(0, item.dateInfo.indexOf('/'))+'</span>入住</div><div>地址：'+ item.houseAddress+'</div><a id="right-arrow" class="aui-pull-right aui-iconfont aui-icon-right"></a>'+ phoneBtn +trafficRoute+ commentBtn+'</li>';
+    					// alert('y=' + (157 * ((page - 1) * 5 + i + 1)));
+    					// onclick="callPhone(\'' +item.phoneNum +'\')"
+    					// setTimeout('openMap(\'' + item + '\',' + i + ')', 100 * i);
+				    }
+            setTimeout("api.parseTapmode()", 100);
+				    if(pageIndex == 1){
+              $api.html($api.byId('list'), listhtml);
+            }else{
+             $api.append($api.byId('list'), listhtml);
+            }
+            page += 1;
+            if (page > totalPage) {
+              return;
+            };
+            $api.after($api.byId('list'), '<p id="more" tapmode onclick="getOrderList('+page+')">点击加载更多</p>');
+          }
+
+        }/*, true*/);
+      });
+    }
+
+
+    function openOrderDetail(orderDetail){
+      
+      openWindow(function(delay){
+
+        api.openWin({
+          name: 'user_order_detail_win',
+          url: 'user_order_detail_win.html',
+          pageParam:{
+            orderDetail: orderDetail
+          },
+          delay: delay
+        })     
+      })
+    }
+    function openNewComment(houseId,orderId ,  elIndex){
+
+      openWindow(function(delay){
+
+        api.openWin({
+          name: 'new_comment_win',
+          url: 'new_comment_win.html',
+          pageParam:{
+            houseId: houseId,
+            orderId: orderId,
+            elIndex: elIndex
+          },
+          delay: delay
+        })     
+      })
+    }
+
+    function trafficRoute(longitude, latitude){
+        openWindow(function(delay){
+
+        api.openWin({
+          name: 'traffic_route_win',
+          url: 'traffic_route_win.html',
+          pageParam:{
+            longitude: longitude,
+            latitude: latitude
+          },
+          delay: delay
+        })     
+      })
+    }
+
+    function updateEl(elIndex){
+      var childEl = $api.first($api.byId('list'));
+      for(var i = 0; i < elIndex; i++){
+        childEl = childEl.nextSibling;
+      }
+      // $api.remove(childEl);
+      $api.addCls($api.last(childEl), 'aui-hide');
+    }
+  //   function openMap(item,page, index){
+  //   	// alert('item=' + JSON.stringify(item) + ',index=' + index); return;
+    	
+  //   	setTimeout(function(){addMapView(item,page, index);}, 300*index);
+    	
+  //   }
+  //   function addMapView(item,page, index){
+  //   	// alert('y=' + (165 * ((page - 1) * 5 + index + 1 )));return;
+
+  //   	var map = api.require('bMap');
+		// map.open({
+  //           rect: {
+  //               x: 0,
+  //               y: 165 * ((page - 1) * 5 + index + 1 ),
+  //               h:180
+  //           },
+  //           center: {
+  //               lon: item.longitude,
+  //               lat: item.latitude
+  //           },
+  //           zoomLevel: 16,
+  //           showUserLocation: false,
+  //           fixedOn: 'user_order_list_frm',
+  //           fixed: false
+  //       }, function(ret){
+            
+  //       });
+  //       map.setMapAttr({
+  //         zoomEnable: false,
+  //         scrollEnable: false
+  //       });
+  //   }
+
+
+    
+</script>
+</html>

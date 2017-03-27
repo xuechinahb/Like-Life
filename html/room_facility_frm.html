@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Frm</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style type="text/css">
+	.all-checked {
+	display: inline-table;
+	margin: 5px 0px 0px !important;
+	float: right;
+	}
+
+.pull-right-padded{
+	margin-right: 15px;
+	height: 100%
+}
+/*.category{
+	padding-right: 30px;
+}*/
+.span-select-all{
+	text-align: center;
+	line-height: 40px;
+	color: #f66;
+}
+.category:after {
+	border-bottom: 1px solid #f66;
+	display: block;
+	content: '';
+	-webkit-transform-origin: 0 0;
+	-webkit-transform: scale(1);
+	pointer-events: none;
+}
+.aui-input-addon{
+	font-size: 16px !important;
+}
+.aui-input-row:first-child:after {
+  	border-top: 0px solid #c8c7cc;
+  	}
+
+.div-hide{
+	display: none;
+}
+.div-show{
+	display: block;
+}
+</style>
+<body>
+	
+	<div class="aui-content-padded" id="main">
+		<div class="category" onclick="expand('common-facility')">
+			<span class="app-title"><em class="aui-iconfont aui-icon-unfold"></em>常用设施</span>
+			<span class="aui-pull-right pull-right-padded" tapmode onclick="selectAll(this, 'common-facility')"><span class="span-select-all">全选</span><input class="aui-checkbox aui-checkbox-app all-checked" type="checkbox" onclick="return false;"></span>
+		</div>
+		<div id="common-facility" class="noclass">
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">生活必需品</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox" >
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">洗发水</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">电视</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">空调</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">暖气</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">Wi-Fi网络</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+		</div>
+		<div class="category"  onclick="expand('other-facility')">
+			<span class="app-title"><em class="aui-iconfont aui-icon-unfold"></em>其他设施</span>
+			<span class="aui-pull-right pull-right-padded" tapmode onclick="selectAll(this, 'other-facility')"><span class="span-select-all">全选</span><input class="aui-checkbox aui-checkbox-app all-checked" type="checkbox" onclick="return false;"></span>
+		</div>
+		<div id="other-facility">
+			<div class="aui-input-row"  tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">热水淋浴</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">洗衣机</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">游泳池</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">烘干机</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">早餐</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">免费停车</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">健身房</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">电梯</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">室内壁炉</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+		</div>
+		<div class="category" onclick="expand('special-facility')">
+			<span class="app-title"><em class="aui-iconfont aui-icon-unfold"></em>特殊设施</span>
+			<span class="aui-pull-right pull-right-padded" tapmode onclick="selectAll(this, 'special-facility')"><span class="span-select-all">全选</span><input class="aui-checkbox aui-checkbox-app all-checked" type="checkbox" onclick="return false;"></span>
+		</div>
+		<div id="special-facility">
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">聚会派对</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">吸烟室</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">无障碍设施</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+			<div class="aui-input-row" tapmode onclick="checkEl(this)">
+				<label class="aui-input-addon">免费接送</label>
+				<input class="aui-pull-right aui-checkbox aui-checkbox-app" type="checkbox">
+			</div>
+		</div>
+
+		
+	</div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+        var pageParam = api.pageParam;
+        if (pageParam.state) {
+        	var arr = pageParam.state.split(',');
+        	var elArray=document.getElementsByTagName("input");
+        	for(i in elArray){
+        		var el = elArray[i];
+        		if (arr[i] == '1') {
+        			el.checked = true;
+        		}else{
+        			el.checked = false;
+        		}
+        	}
+        };
+        
+    }
+    function checkEl(el){
+    	// alert('checkEl');
+    	var checkbox = $api.last(el);
+    	// alert('attr=' + $api.attr(checkbox,'checked'));
+    	// if ($api.attr(checkbox,'checked') == 'checked') {
+    	// 	$api.removeAttr(checkbox, 'checked');
+    	// }else{
+    	// 	$api.attr(checkbox,'checked','checked');
+    	// }
+    	if (checkbox.checked == true) {
+    		checkbox.checked = false;
+    		var selectAll = $api.last($api.last($api.prev(el.parentNode)));
+    		selectAll.checked =false;
+    	}else{
+    		checkbox.checked = true;
+    	}
+    	var e = window.event;
+		if (e) {
+			e.preventDefault(); 
+		};
+    }
+    function expand(elId){
+    	// var checkbox = $api.last($api.last(el));
+    	// var state = checkbox.checked;
+    	// alert('expand=' + state);
+    	var el = $api.byId(elId);
+    	if ($api.cssVal(el,'display') == 'block') {
+    		$api.css(el,'display:none;');
+    	}else{
+    		$api.css(el,'display:block;');
+    	}
+
+  //   	var e = window.event;
+		// if (e) {
+			// e.preventDefault(); 
+		// 	e.stopPropagation();
+		// };
+		// checkbox.checked = state;
+    }
+    function selectAll(el, id, flag){
+
+    	// alert('selectAll');
+    	// var checkbox;
+    	// if (flag) {
+    	// 	checkbox = el;
+    	// }else{
+    	// 	checkbox = $api.last(el);
+    	// }
+    	var checkboxAll = $api.last(el);
+    	var container = $api.byId(id);
+    	var childEl = $api.first(container);
+
+    	// if ($api.attr(checkbox,'checked') == 'checked') {
+    	// 	$api.removeAttr(checkbox, 'checked');
+    	// 	do{
+    	// 		$api.removeAttr($api.last(childEl), 'checked');
+    	// 	}while(childEl = childEl.nextSibling);
+    	// }else{
+    	// 	$api.attr(checkbox,'checked','checked');
+    	// 	do{
+    	// 		$api.attr($api.last(childEl),'checked','checked');
+    	// 	}while(childEl = childEl.nextSibling);
+    	// }
+    	if (checkboxAll.checked == true) {
+    		checkboxAll.checked = false;
+    		do{
+    			$api.last(childEl).checked = false;
+    		}while(childEl = $api.next(childEl));
+    	}else{
+    		checkboxAll.checked = true;
+    		do{
+    			$api.last(childEl).checked = true;
+    		}while(childEl = $api.next(childEl));
+    	}
+    	// return false;
+    	var e = window.event;
+		if (e) {
+			e.preventDefault(); 
+			e.stopPropagation();
+		};
+		// return false;
+    }
+
+
+    function getHtml(){
+    	var facilityArray = new Array();
+    	var checkStateArray = new Array();
+    	// var commonFacilityChildEl = $api.first($api.byId('common-facility'));
+
+    	// var temp = ['common-facility', 'other-facility', 'special-facility'];
+    	// for(i in temp){
+    	// 	var childEl = $api.first($api.byId(temp[i]));
+    	// 	do{
+    	// 		if ($api.attr($api.last(childEl),'checked') == 'checked') {
+    	// 			facilityArray.push($api.html($api.first(childEl)));
+    	// 		};
+    	// 	}while(childEl = childEl.nextSibling);
+    	// }
+
+    	var elArray=document.getElementsByTagName("input");
+    	for(i in elArray){
+    		var el = elArray[i];
+    		if (el.checked == true) {
+    			var text = $api.html($api.prev(el));
+    			if (text) {
+    				// facilityArray.push(text);
+    				if (i < 7) {
+    					facilityArray.push(i - 1);
+    				}else if(i < 17){
+    					facilityArray.push(i - 2 );
+    				}else{
+    					facilityArray.push(i - 3);
+    				}
+    				
+    			};
+    			checkStateArray.push('1');
+    		}else{
+    			checkStateArray.push('0');
+    		}
+    	}
+  		
+
+    	// alert('facilityArray=' + facilityArray);return;
+    	api.closeWin();
+    	api.execScript({
+            name: 'new_room_addition_win',
+            frameName: 'new_room_addition_frm',
+            // script: 'setFacility(' + JSON.stringify(facilityArray) + ');'
+            script: 'setFacility(\''+ facilityArray.join()+ '\',\''+ checkStateArray.join() +'\');'
+            // script: 'setFacility(' + facilityArray + ',\''+ mainHtml +'\');'
+        });
+    	// alert('facilityArray=' + facilityArray);
+    }
+
+ 
+</script>
+</html>

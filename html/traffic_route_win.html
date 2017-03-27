@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>APP_Win</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+    <style type="text/css">
+        .aui-title img{
+            padding: 5px;
+        }
+        .route-icon-selected{
+            background-color: white;
+            border: 1px solid white;
+            border-radius: 50%;
+            
+        }
+       /* .route-icon-noselect{
+
+        }*/
+    </style>
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-app" id="aui-header">
+        <a class="aui-btn aui-btn-app aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">
+            <img class="route-icon-selected"  onclick="generateRoute(this, 'transit', 'ebus_walk_first')" src="../image/icon_route_bus.png"/>
+             <img onclick="generateRoute(this, 'drive', 'ecar_fee_first')" src="../image/icon_route_car.png"/>
+             <img onclick="generateRoute(this, 'walk', '')" src="../image/icon_route_walk.png"/>
+        </div>
+        <a class="aui-iconfont aui-icon-menu aui-pull-right"></a>
+    </header>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    function closeWin(){
+        api.closeWin();
+    }
+    apiready = function(){
+        api.parseTapmode();
+        var header = $api.byId('aui-header');
+        $api.fixStatusBar(header); 
+        var headerPos = $api.offset(header);
+        var body_h = $api.offset($api.dom('body')).h;
+        api.openFrame({
+            name: 'traffic_route_frm',
+            url: 'traffic_route_frm.html',
+            pageParam: api.pageParam,
+            bounces: true,
+            rect: {
+                x: 0,
+                y: headerPos.h,
+                w: headerPos.w,
+                h: 'auto'
+            }
+        })
+        
+    };
+
+    function generateRoute(el, routeType, policy){
+        
+        var childEl = $api.first($api.byId('title'));
+        do{
+            if (childEl == el) {
+                $api.addCls(childEl, 'route-icon-selected');
+            }else{
+                if ($api.hasCls(childEl, 'route-icon-selected')) {
+                    $api.removeCls(childEl, 'route-icon-selected');
+                };
+            }
+        }while(childEl = childEl.nextSibling)
+
+
+        var jsfun = 'searchRoute(\'' + routeType + '\',\'' + policy + '\');';
+        api.execScript({
+            name: 'traffic_route_win',
+            frameName: 'traffic_route_frm',
+            script: jsfun
+        });
+    }
+</script>
+</html>
