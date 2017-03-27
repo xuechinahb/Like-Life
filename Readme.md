@@ -2,7 +2,7 @@
 > App build by [ApiCloud](http://www.apicloud.com)
 
 ---
-### Notice: post API is blocked.
+### Notice: appID and appkey of 3rd party sdks are removed.post API is blocked.
 ## Module Dependency
 ![](./module-dependency.png "")
 
